@@ -12,6 +12,7 @@ class NetworkInterface
   public:
     static nonstd::expected<NetworkInterface, std::string> GetByName(const std::string_view interfaceName);
     static nonstd::expected<NetworkInterface, std::string> GetByIp(const std::string_view interfaceIp);
+    static std::vector<pcpp::PcapLiveDevice*> GetAvailableInterfaces();
 
     pcpp::PcapLiveDevice *device;
 

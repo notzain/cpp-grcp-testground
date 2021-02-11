@@ -22,7 +22,7 @@ int main(int argc, const char **argv)
     logger.Initialize({ .applicationName = "Embedded",
                         .logPath = "my_log.txt" });
 
-    if (const auto networkInterface = core::net::NetworkInterface::GetByName("eth0"))
+    if (const auto networkInterface = core::net::NetworkInterface::GetByIp("192.168.178.52"))
     {
         logger()->info("Found interface");
 
@@ -36,15 +36,18 @@ int main(int argc, const char **argv)
         logger()->info("Opened interface, starting scan");
 
         auto result = pcpp::NetworkUtils::getInstance().getMacAddress(
-            pcpp::IPv4Address("172.24.16.1"),
+            pcpp::IPv4Address("192.168.178.1"),
             device,
             responseTime);
 
-        logger()->info("{} took {}", result.toString(), responseTime);
+        logger()->info("{} took {} ms", result.toString(), responseTime);
     }
     else
     {
         logger()->warn("{}", networkInterface.error());
+        logger()->info("Available interfaces:");
+        for (const auto *iface : core::net::NetworkInterface::GetAvailableInterfaces())
+            logger()->info("\t{} - {}", iface->getName(), iface->getIPv4Address().toString());
     }
 
     const auto args = docopt::docopt(usage, { argv + 1, argv + argc });
@@ -56,9 +59,6 @@ int main(int argc, const char **argv)
     {
         logger()->info("{} - {}", key, value);
     }
-
-    core::services::ArpScanner scanner;
-    logger()->info("{}", scanner);
 
     return 0;
 }

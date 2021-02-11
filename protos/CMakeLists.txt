@@ -2,8 +2,8 @@
 file(MAKE_DIRECTORY ${CMAKE_BINARY_DIR}/generated)
 
 if(MSVC)
-    set(protoc build_tools/protoc.exe)
-    set(grpc_plugin build_tools/grpc_cpp_plugin.exe)
+    set(protoc ${CMAKE_BINARY_DIR}/build_tools/protoc.exe)
+    set(grpc_plugin ${CMAKE_BINARY_DIR}/build_tools/grpc_cpp_plugin.exe)
 else()
     set(protoc ${CMAKE_BINARY_DIR}/build_tools/protoc)
     set(grpc_plugin ${CMAKE_BINARY_DIR}/build_tools/grpc_cpp_plugin)

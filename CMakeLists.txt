@@ -6,10 +6,14 @@ project(Example_gRPC
         HOMEPAGE_URL ""
         LANGUAGES CXX)
 
-set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
-set(CMAKE_CXX_EXTENSIONS OFF)
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
+
+if(MSVC)
+    add_compile_options("/std:c++latest")
+else()
+    set(CMAKE_CXX_STANDARD 17)
+endif()
 
 if(NOT EXISTS "${CMAKE_CURRENT_BINARY_DIR}/conan.cmake")
    message(STATUS "Downloading conan.cmake from https://github.com/conan-io/cmake-conan")
@@ -17,6 +21,12 @@ if(NOT EXISTS "${CMAKE_CURRENT_BINARY_DIR}/conan.cmake")
                   "${CMAKE_CURRENT_BINARY_DIR}/conan.cmake")
 endif()
 include(${CMAKE_CURRENT_BINARY_DIR}/conan.cmake)
+
+conan_add_remote(NAME bincrafters
+                URL https://api.bintray.com/conan/bincrafters/public-conan)
+conan_add_remote(NAME inexorgame
+                URL https://api.bintray.com/conan/inexorgame/inexor-conan)
+
 conan_cmake_run(CONANFILE conanfile.txt
                 BASIC_SETUP CMAKE_TARGETS
                 BUILD missing)

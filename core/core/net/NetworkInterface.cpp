@@ -20,7 +20,7 @@ nonstd::expected<NetworkInterface, std::string> NetworkInterface::GetByName(cons
 
 nonstd::expected<NetworkInterface, std::string> NetworkInterface::GetByIp(const std::string_view interfaceIp)
 {
-    if (auto *device = pcpp::PcapLiveDeviceList::getInstance().getPcapLiveDeviceByName(interfaceIp.data()))
+    if (auto *device = pcpp::PcapLiveDeviceList::getInstance().getPcapLiveDeviceByIp(interfaceIp.data()))
     {
         return NetworkInterface(device);
     }
@@ -28,6 +28,11 @@ nonstd::expected<NetworkInterface, std::string> NetworkInterface::GetByIp(const 
     {
         return nonstd::make_unexpected(fmt::format("Could not find interface '{}'", interfaceIp));
     }
+}
+
+std::vector<pcpp::PcapLiveDevice *> NetworkInterface::GetAvailableInterfaces()
+{
+    return pcpp::PcapLiveDeviceList::getInstance().getPcapLiveDevicesList();
 }
 
 NetworkInterface::NetworkInterface(pcpp::PcapLiveDevice *device)
