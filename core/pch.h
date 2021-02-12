@@ -13,6 +13,7 @@
 #include <vector>
 
 // external
+#include <boost/algorithm/string.hpp>
 #include <fmt/format.h>
 #include <nlohmann/json.hpp>
 #include <nonstd/expected.hpp>

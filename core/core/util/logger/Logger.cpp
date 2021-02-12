@@ -23,10 +23,19 @@ void Logger::Initialize(Options options)
         spdlog::async_overflow_policy::block);
 
     spdlog::register_logger(m_logger);
+
+    m_debugLogger = spdlog::stdout_color_mt("Debug");
+    m_debugLogger->set_pattern("[%Y-%m-%d %T.%e] [%n] [%t | %s - %!:%#] [%^%l%$] %v");
+}
+
+std::shared_ptr<spdlog::logger> Logger::Debug()
+{
+    return m_debugLogger;
 }
 
 std::shared_ptr<spdlog::logger> Logger::operator()()
 {
     return m_logger;
 }
+
 } // namespace core::util
