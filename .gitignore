@@ -32,7 +32,9 @@
 *.app
 
 # Ignore the out of source build directory
+cmake-build-*/
 build/
+.idea/**
 .cache/**
 .vscode/**
 .vs/

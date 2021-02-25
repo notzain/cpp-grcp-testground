@@ -1,12 +1,13 @@
 BasedOnStyle: Microsoft
 
-AlignAfterOpenBracket: AlwaysBreak
+ColumnLimit: 0
+PointerAlignment: Left
 AllowAllArgumentsOnNextLine: true
 AlwaysBreakTemplateDeclarations: Yes
 BinPackArguments: false
 BinPackParameters: false
 BreakConstructorInitializers: BeforeComma
 BreakInheritanceList: BeforeComma
-ColumnLimit: 0
 Cpp11BracedListStyle: false
 IndentWidth: 4
+MaxEmptyLinesToKeep: 1

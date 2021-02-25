@@ -1,34 +1,39 @@
 #pragma once
 
-// std
+/* std */
 #include <algorithm>
+#include <array>
+#include <chrono>
 #include <cstdint>
+#include <functional>
+#include <future>
+#include <iostream>
+#include <iterator>
 #include <map>
 #include <memory>
 #include <mutex>
 #include <string>
 #include <string_view>
 #include <thread>
+#include <type_traits>
 #include <utility>
 #include <vector>
 
-// external
+/* external */
 #include <boost/algorithm/string.hpp>
+#include <boost/asio.hpp>
+#include <boost/operators.hpp>
+#include <boost/type_traits.hpp>
 #include <fmt/format.h>
 #include <nlohmann/json.hpp>
 #include <nonstd/expected.hpp>
+// clang-format off
+#include <spdlog/spdlog.h>
+#include <spdlog/fmt/bin_to_hex.h>
+#include <spdlog/fmt/fmt.h>
+// clang-format on
 
-// internal
+/* internal */
+#include "core/util/Result.h"
+#include "core/util/Sequence.h"
 #include "core/util/logger/Logger.h"
-
-using u8 = std::uint8_t;
-using i8 = std::int8_t;
-
-using u16 = std::uint16_t;
-using i16 = std::int16_t;
-
-using u32 = std::uint32_t;
-using i32 = std::int32_t;
-
-using u64 = std::uint64_t;
-using i64 = std::int64_t;

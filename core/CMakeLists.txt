@@ -23,3 +23,4 @@ target_link_libraries(core
 )
 
 target_precompile_headers(core PRIVATE pch.h)
+#set_target_properties(core PROPERTIES UNITY_BUILD ON)

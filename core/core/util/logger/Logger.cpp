@@ -7,13 +7,14 @@
 namespace core::util
 {
 
-void Logger::Initialize(Options options)
+void Logger::initialize(Options options)
 {
     spdlog::init_thread_pool(8192, 1);
 
     std::vector<spdlog::sink_ptr> sinks{
         std::make_shared<spdlog::sinks::stdout_color_sink_mt>(),
-        std::make_shared<spdlog::sinks::basic_file_sink_mt>(std::move(options.logPath))};
+        std::make_shared<spdlog::sinks::basic_file_sink_mt>(std::move(options.logPath))
+    };
 
     m_logger = std::make_shared<spdlog::async_logger>(
         std::move(options.applicationName),
@@ -28,14 +29,20 @@ void Logger::Initialize(Options options)
     m_debugLogger->set_pattern("[%Y-%m-%d %T.%e] [%n] [%t | %s - %!:%#] [%^%l%$] %v");
 }
 
-std::shared_ptr<spdlog::logger> Logger::Debug()
+std::shared_ptr<spdlog::logger> Logger::log()
+{
+    return m_logger;
+}
+
+std::shared_ptr<spdlog::logger> Logger::debug()
 {
     return m_debugLogger;
 }
 
-std::shared_ptr<spdlog::logger> Logger::operator()()
+void Logger::setLevel(spdlog::level::level_enum level)
 {
-    return m_logger;
+    m_debugLogger->set_level(level);
+    m_logger->set_level(level);
 }
 
 } // namespace core::util

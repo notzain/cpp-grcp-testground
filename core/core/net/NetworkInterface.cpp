@@ -1,14 +1,21 @@
 #include "NetworkInterface.h"
 #include <PcapLiveDevice.h>
 #include <PcapLiveDeviceList.h>
-#include <fmt/format.h>
-#include <nonstd/expected.hpp>
+
+#include <spdlog/fmt/fmt.h>
 
 namespace core::net
 {
-nonstd::expected<NetworkInterface, std::string> NetworkInterface::GetByName(const std::string_view interfaceName)
+std::optional<NetworkInterface> NetworkInterface::m_defaultInterface = std::nullopt;
+
+NetworkInterface::NetworkInterface(pcpp::PcapLiveDevice* device)
+    : device(device)
 {
-    if (auto *device = pcpp::PcapLiveDeviceList::getInstance().getPcapLiveDeviceByName(interfaceName.data()))
+}
+
+nonstd::expected<NetworkInterface, std::string> NetworkInterface::byName(const std::string_view interfaceName)
+{
+    if (auto* device = pcpp::PcapLiveDeviceList::getInstance().getPcapLiveDeviceByName(interfaceName.data()))
     {
         return NetworkInterface(device);
     }
@@ -18,9 +25,9 @@ nonstd::expected<NetworkInterface, std::string> NetworkInterface::GetByName(cons
     }
 }
 
-nonstd::expected<NetworkInterface, std::string> NetworkInterface::GetByIp(const std::string_view interfaceIp)
+nonstd::expected<NetworkInterface, std::string> NetworkInterface::byIp(const std::string_view interfaceIp)
 {
-    if (auto *device = pcpp::PcapLiveDeviceList::getInstance().getPcapLiveDeviceByIp(interfaceIp.data()))
+    if (auto* device = pcpp::PcapLiveDeviceList::getInstance().getPcapLiveDeviceByIp(interfaceIp.data()))
     {
         return NetworkInterface(device);
     }
@@ -30,13 +37,21 @@ nonstd::expected<NetworkInterface, std::string> NetworkInterface::GetByIp(const 
     }
 }
 
-std::vector<pcpp::PcapLiveDevice *> NetworkInterface::GetAvailableInterfaces()
+std::vector<pcpp::PcapLiveDevice*> NetworkInterface::availableInterfaces()
 {
     return pcpp::PcapLiveDeviceList::getInstance().getPcapLiveDevicesList();
 }
 
-NetworkInterface::NetworkInterface(pcpp::PcapLiveDevice *device)
-    : device(device)
+util::Result<NetworkInterface> NetworkInterface::defaultInterface()
 {
+    if (m_defaultInterface.has_value())
+        return *m_defaultInterface;
+    else
+        return util::Result<NetworkInterface>::unexpected("No default interface was set.");
+}
+
+void NetworkInterface::setDefaultInterface(const NetworkInterface& networkInterface)
+{
+    m_defaultInterface = networkInterface;
 }
 } // namespace core::net
