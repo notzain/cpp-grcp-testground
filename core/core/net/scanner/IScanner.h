@@ -14,6 +14,7 @@ namespace core::net
 class IScanner
 {
   public:
+    virtual ~IScanner() = default;
     virtual util::Result<int> ping(std::string_view host) = 0;
 };
 

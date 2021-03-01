@@ -13,6 +13,8 @@ class RawSocket : public ISocket
 
   public:
     explicit RawSocket(NetworkInterface& networkInterface);
+    virtual ~RawSocket() = default;
+
     bool connect() override;
     bool isConnected() const override;
     bool disconnect() override;

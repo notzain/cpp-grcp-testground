@@ -8,6 +8,7 @@ namespace core::net
 class ISocket
 {
   public:
+    virtual ~ISocket() = default;
     virtual bool connect() = 0;
     virtual bool isConnected() const = 0;
     virtual bool disconnect() = 0;

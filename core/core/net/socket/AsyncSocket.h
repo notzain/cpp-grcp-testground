@@ -19,12 +19,14 @@ using PacketByteContainer = boost::container::static_vector<std::uint8_t, 128>;
 
 struct IAsyncSocket
 {
+    virtual ~IAsyncSocket() = default;
     virtual std::future<std::size_t> sendToAsync(std::string_view host, std::size_t port, void* data, std::size_t len) = 0;
     virtual std::optional<PacketByteContainer> nextReceivedPacket() = 0;
 };
 
 struct ToAsync
 {
+    virtual ~ToAsync() = default;
     virtual std::shared_ptr<IAsyncSocket> toAsync() = 0;
 };
 

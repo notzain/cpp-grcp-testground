@@ -9,8 +9,6 @@ namespace core::util
 template <typename T>
 class Sequence
 {
-
-
     T first;
     T last;
 
@@ -36,8 +34,8 @@ class Sequence
         Sequence *seq;
         mutable T value;
 
-        Iterator(Sequence *seq, T v)
-            : seq(seq)
+        Iterator(Sequence* sequence, T v)
+            : seq(sequence)
             , value(std::move(v))
         {
         }

@@ -16,9 +16,9 @@ template <>
     std::array<std::uint8_t, 4> bytes = { currentIp[0], currentIp[1], currentIp[2], currentIp[3] };
     for (int i = static_cast<int>(bytes.size()) - 1; i >= 0; --i)
     {
-        if (bytes[i] == 255)
+        if (bytes[i] == static_cast<std::uint8_t>(255))
         {
-            bytes[i] = 0;
+            bytes[i] = static_cast<std::uint8_t>(0);
         }
         else
         {

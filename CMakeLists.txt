@@ -6,6 +6,8 @@ project(Example_gRPC
         HOMEPAGE_URL ""
         LANGUAGES CXX)
 
+set(WARNINGS_AS_ERRORS FALSE)
+
 include(cmake/StandardProjectSettings.cmake)
 include(cmake/CompilerWarnings.cmake)
 include(cmake/PreventInSourceBuilds.cmake)
@@ -22,6 +24,7 @@ if(NOT EXISTS "${CMAKE_CURRENT_BINARY_DIR}/conan.cmake")
                   "${CMAKE_CURRENT_BINARY_DIR}/conan.cmake")
 endif()
 include(${CMAKE_CURRENT_BINARY_DIR}/conan.cmake)
+
 conan_add_remote(NAME bincrafters
                 URL https://api.bintray.com/conan/bincrafters/public-conan)
 conan_add_remote(NAME inexorgame
