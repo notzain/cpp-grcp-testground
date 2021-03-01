@@ -13,6 +13,7 @@ SocketPool::SocketPool()
     })
 {
 }
+
 SocketPool::~SocketPool()
 {
     shutdown();

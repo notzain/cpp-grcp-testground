@@ -19,7 +19,7 @@ class SocketPool
     static SocketPool& defaultPool();
 
     SocketPool();
-    ~SocketPool();
+    virtual ~SocketPool();
 
     void shutdown();
 

@@ -1,7 +1,6 @@
 #include "ICMPSocket.h"
 
-#include <array>
-#include <boost/asio/use_future.hpp>
+#include "core/util/logger/Logger.h"
 
 namespace core::net
 {
@@ -9,6 +8,18 @@ ICMPSocket::ICMPSocket(boost::asio::io_service& ioService)
     : m_socket(ioService)
 {
     m_socket.open(boost::asio::ip::icmp::v4());
+}
+
+ICMPSocket::~ICMPSocket()
+{
+    try
+    {
+        m_socket.close();
+    }
+    catch (const std::exception& e)
+    {
+        CORE_WARN(e.what());
+    }
 }
 
 bool ICMPSocket::connect()
@@ -53,13 +64,6 @@ nonstd::expected<std::size_t, std::string> ICMPSocket::sendTo(std::string_view h
     }
 }
 
-std::future<std::size_t> ICMPSocket::sendToAsync(std::string_view host, std::size_t port, void* data, std::size_t len)
-{
-    auto remote_endpoint = boost::asio::ip::icmp::endpoint(boost::asio::ip::make_address_v4(host), port);
-
-    return m_socket.async_send_to(boost::asio::buffer(data, len), remote_endpoint, boost::asio::use_future);
-}
-
 nonstd::expected<std::vector<std::uint8_t>, std::string> ICMPSocket::receive(std::string_view host, std::size_t port)
 {
     auto remote_endpoint = boost::asio::ip::icmp::endpoint(boost::asio::ip::make_address_v4(host), port);
@@ -80,4 +84,8 @@ nonstd::expected<std::vector<std::uint8_t>, std::string> ICMPSocket::receive(std
     }
 }
 
+std::shared_ptr<IAsyncSocket> ICMPSocket::toAsync()
+{
+    return std::make_shared<AsyncSocket<SocketType>>(m_socket);
+}
 } // namespace core::net

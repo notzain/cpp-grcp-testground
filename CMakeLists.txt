@@ -6,8 +6,12 @@ project(Example_gRPC
         HOMEPAGE_URL ""
         LANGUAGES CXX)
 
+include(cmake/StandardProjectSettings.cmake)
+include(cmake/CompilerWarnings.cmake)
+include(cmake/PreventInSourceBuilds.cmake)
+include(cmake/Cache.cmake)
+
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
-set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 set(CMAKE_CXX_STANDARD 17)
 
 set(CONAN_SYSTEM_INCLUDES ON)
@@ -34,3 +38,5 @@ configure_file(.clang-format .clang-format COPYONLY)
 add_subdirectory(protos)
 add_subdirectory(core)
 add_subdirectory(app)
+
+set_project_warnings(core)

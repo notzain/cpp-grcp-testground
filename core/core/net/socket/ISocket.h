@@ -2,7 +2,6 @@
 
 #include <nonstd/expected.hpp>
 #include <string>
-#include <vector>
 
 namespace core::net
 {

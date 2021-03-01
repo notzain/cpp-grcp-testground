@@ -77,22 +77,27 @@ class WrapAround
     {
         return m_value == rhs.m_value;
     }
+
     bool operator!=(const WrapAround& rhs) const
     {
         return !(rhs == *this);
     }
+
     bool operator<(const WrapAround& rhs) const
     {
         return m_value < rhs.m_value;
     }
+
     bool operator>(const WrapAround& rhs) const
     {
         return rhs < *this;
     }
+
     bool operator<=(const WrapAround& rhs) const
     {
         return !(rhs < *this);
     }
+
     bool operator>=(const WrapAround& rhs) const
     {
         return !(*this < rhs);

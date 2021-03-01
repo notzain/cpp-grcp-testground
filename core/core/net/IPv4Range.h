@@ -10,11 +10,11 @@
 namespace core::util
 {
 template <>
-[[nodiscard]] pcpp::IPv4Address Sequence<pcpp::IPv4Address>::increment(const pcpp::IPv4Address& address) const
+[[nodiscard]] inline pcpp::IPv4Address Sequence<pcpp::IPv4Address>::increment(const pcpp::IPv4Address& address) const
 {
     const auto* currentIp = address.toBytes();
     std::array<std::uint8_t, 4> bytes = { currentIp[0], currentIp[1], currentIp[2], currentIp[3] };
-    for (size_t i = bytes.size() - 1; i >= 0; --i)
+    for (int i = static_cast<int>(bytes.size()) - 1; i >= 0; --i)
     {
         if (bytes[i] == 255)
         {
