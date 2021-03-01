@@ -44,16 +44,16 @@ util::Result<int> ICMPScanner::ping(std::string_view host)
     return 1;
 }
 
-void ICMPScanner::onPacketReceived(std::vector<std::uint8_t>& bytes)
+void ICMPScanner::onPacketReceived(std::uint8_t* bytes, std::size_t len)
 {
-    const auto* ipHeader = reinterpret_cast<const pcpp::iphdr*>(bytes.data());
+    const auto* ipHeader = reinterpret_cast<const pcpp::iphdr*>(bytes);
     pcpp::icmp_echo_reply icmpReply{};
-    icmpReply.header = reinterpret_cast<pcpp::icmp_echo_hdr*>(bytes.data() + sizeof(pcpp::iphdr));
-    icmpReply.data = bytes.data() + sizeof(pcpp::iphdr) + sizeof(pcpp::icmp_echo_hdr);
-    icmpReply.dataLength = &bytes.back() - icmpReply.data;
+    icmpReply.header = reinterpret_cast<pcpp::icmp_echo_hdr*>(bytes + sizeof(pcpp::iphdr));
+    icmpReply.data = bytes + sizeof(pcpp::iphdr) + sizeof(pcpp::icmp_echo_hdr);
+    icmpReply.dataLength = (bytes + len) - icmpReply.data;
 
     CORE_INFO("Got reply from '{}': {}",
               pcpp::IPv4Address(ipHeader->ipSrc).toString(),
-              spdlog::to_hex(bytes, 16));
+              spdlog::to_hex(bytes, bytes + len, 16));
 }
 } // namespace core::net

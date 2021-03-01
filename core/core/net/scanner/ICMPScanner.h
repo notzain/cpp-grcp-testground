@@ -24,6 +24,6 @@ class ICMPScanner : public IAsyncScanner
     virtual ~ICMPScanner() = default;
 
     util::Result<int> ping(std::string_view host) override;
-    void onPacketReceived(std::vector<std::uint8_t>& bytes) override;
+    void onPacketReceived(std::uint8_t* bytes, std::size_t len) override;
 };
 } // namespace core::net

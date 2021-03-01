@@ -34,7 +34,7 @@ void IAsyncScanner::read()
     {
         if (auto bytesRead = m_asyncSocket->nextReceivedPacket())
         {
-            onPacketReceived(*bytesRead);
+            onPacketReceived(bytesRead->data(), bytesRead->size());
         }
         else
         {

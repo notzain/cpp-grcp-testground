@@ -31,7 +31,7 @@ class IAsyncScanner : public IScanner
     void startReading();
     void stopReading();
 
-    virtual void onPacketReceived(std::vector<std::uint8_t>& bytes) = 0;
+    virtual void onPacketReceived(std::uint8_t* bytes, std::size_t len) = 0;
 
   private:
     void read();

@@ -3,6 +3,7 @@
 #include "core/util/logger/Logger.h"
 
 #include <boost/asio.hpp>
+#include <boost/container/static_vector.hpp>
 #include <boost/lockfree/spsc_queue.hpp>
 #include <chrono>
 #include <condition_variable>
@@ -14,10 +15,12 @@
 namespace core::net
 {
 
+using PacketByteContainer = boost::container::static_vector<std::uint8_t, 128>;
+
 struct IAsyncSocket
 {
     virtual std::future<std::size_t> sendToAsync(std::string_view host, std::size_t port, void* data, std::size_t len) = 0;
-    virtual std::optional<std::vector<std::uint8_t>> nextReceivedPacket() = 0;
+    virtual std::optional<PacketByteContainer> nextReceivedPacket() = 0;
 };
 
 struct ToAsync
@@ -31,7 +34,7 @@ class AsyncSocket : public IAsyncSocket
     Socket& m_socket;
     boost::asio::streambuf m_asioBuffer;
 
-    boost::lockfree::spsc_queue<std::vector<std::uint8_t>> m_packetBuffer;
+    boost::lockfree::spsc_queue<boost::container::static_vector<std::uint8_t, 1024>> m_packetBuffer;
 
   public:
     explicit AsyncSocket(Socket& socket)
@@ -47,9 +50,9 @@ class AsyncSocket : public IAsyncSocket
         return m_socket.async_send_to(boost::asio::buffer(data, len), remote_endpoint, boost::asio::use_future);
     }
 
-    std::optional<std::vector<std::uint8_t>> nextReceivedPacket()
+    std::optional<PacketByteContainer> nextReceivedPacket()
     {
-        std::vector<std::uint8_t> data;
+        PacketByteContainer data;
         if (m_packetBuffer.pop(data))
         {
             return data;
@@ -80,7 +83,7 @@ class AsyncSocket : public IAsyncSocket
         m_asioBuffer.commit(length);
         std::istream is(&m_asioBuffer);
 
-        std::vector<std::uint8_t> data(length);
+        PacketByteContainer data(length);
         is.read(reinterpret_cast<char*>(data.data()), length);
 
         m_packetBuffer.push(data);
