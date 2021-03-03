@@ -36,7 +36,7 @@ class AsyncSocket : public IAsyncSocket
     Socket& m_socket;
     boost::asio::streambuf m_asioBuffer;
 
-    boost::lockfree::spsc_queue<boost::container::static_vector<std::uint8_t, 1024>> m_packetBuffer;
+    boost::lockfree::spsc_queue<PacketByteContainer> m_packetBuffer;
 
   public:
     explicit AsyncSocket(Socket& socket)

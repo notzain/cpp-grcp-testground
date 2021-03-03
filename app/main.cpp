@@ -34,9 +34,8 @@ int main(int argc, const char** argv)
     core::util::Logger::instance().initialize({ "Embedded",
                                                 "my_log.txt" });
 
-    if (auto networkInterface = core::net::NetworkInterface::byIp("192.168.178.52"))
     {
-        core::net::ICMPScanner scanner(*networkInterface, core::net::SocketPool::defaultPool().createIcmpSocket());
+        core::net::ICMPScanner scanner(core::net::SocketPool::defaultPool().createIcmpSocket());
         scanner.startReading();
 
         for (const auto ip : core::util::rangeOf<pcpp::IPv4Address>({ "192.168.178.1" }, { "192.168.178.10" }))

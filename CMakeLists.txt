@@ -41,5 +41,3 @@ configure_file(.clang-format .clang-format COPYONLY)
 add_subdirectory(protos)
 add_subdirectory(core)
 add_subdirectory(app)
-
-set_project_warnings(core)

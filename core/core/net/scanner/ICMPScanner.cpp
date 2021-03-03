@@ -16,9 +16,8 @@
 
 namespace core::net
 {
-ICMPScanner::ICMPScanner(NetworkInterface& networkInterface, std::shared_ptr<ICMPSocket> socket)
+ICMPScanner::ICMPScanner(std::shared_ptr<ICMPSocket> socket)
     : IAsyncScanner(socket->toAsync())
-    , m_networkInterface(networkInterface)
     , m_socket(std::move(socket))
 {
 }

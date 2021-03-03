@@ -14,13 +14,11 @@ namespace core::net
 {
 class ICMPScanner : public IAsyncScanner
 {
-    NetworkInterface& m_networkInterface;
-
     std::shared_ptr<ICMPSocket> m_socket;
     util::WrapAround<std::uint8_t> m_sequenceNumber;
 
   public:
-    ICMPScanner(NetworkInterface& networkInterface, std::shared_ptr<ICMPSocket> socket);
+    ICMPScanner(std::shared_ptr<ICMPSocket> socket);
     virtual ~ICMPScanner() = default;
 
     util::Result<int> ping(std::string_view host) override;
