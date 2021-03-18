@@ -21,22 +21,16 @@ class Logger
     };
 
     void initialize(Options options);
-    std::shared_ptr<spdlog::logger> log();
-    std::shared_ptr<spdlog::logger> debug();
     void setLevel(spdlog::level::level_enum level);
 
+    std::shared_ptr<spdlog::logger> log();
+
   private:
+    Logger();
     std::shared_ptr<spdlog::logger> m_logger;
-    std::shared_ptr<spdlog::logger> m_debugLogger;
 };
 } // namespace core::util
 
-#define CORE_TRACE(...) ::core::util::Logger::instance().log()->trace(__VA_ARGS__)
-#define CORE_INFO(...) ::core::util::Logger::instance().log()->info(__VA_ARGS__)
-#define CORE_WARN(...) ::core::util::Logger::instance().log()->warn(__VA_ARGS__)
-#define CORE_ERROR(...) ::core::util::Logger::instance().log()->error(__VA_ARGS__)
-#define CORE_CRITICAL(...) ::core::util::Logger::instance().log()->critical(__VA_ARGS__)
-
-#define CORE_DEBUG_INFO(...) SPDLOG_LOGGER_INFO(::core::util::Logger::instance().debug(), __VA_ARGS__)
-#define CORE_DEBUG_WARN(...) SPDLOG_LOGGER_WARN(::core::util::Logger::instance().debug(), __VA_ARGS__)
-#define CORE_DEBUG_ERROR(...) SPDLOG_LOGGER_ERROR(::core::util::Logger::instance().debug(), __VA_ARGS__)
+#define CORE_INFO(...) SPDLOG_LOGGER_INFO(::core::util::Logger::instance().log(), __VA_ARGS__)
+#define CORE_WARN(...) SPDLOG_LOGGER_WARN(::core::util::Logger::instance().log(), __VA_ARGS__)
+#define CORE_ERROR(...) SPDLOG_LOGGER_ERROR(::core::util::Logger::instance().log(), __VA_ARGS__)

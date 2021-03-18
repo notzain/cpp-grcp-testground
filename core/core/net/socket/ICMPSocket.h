@@ -16,7 +16,7 @@ class ICMPSocket
     , public ToAsync
 {
     using SocketType = boost::asio::ip::icmp::socket;
-    SocketType m_socket;
+    std::shared_ptr<SocketType> m_socket;
 
   public:
     explicit ICMPSocket(boost::asio::io_service& ioService);

@@ -4,6 +4,7 @@ spdlog/1.8.2
 boost/1.75.0
 nlohmann_json/3.9.1
 docopt.cpp/0.6.3
+doctest/2.4.4
 pcapplusplus/20.08@bincrafters/stable
 expected-lite/0.5.0
 

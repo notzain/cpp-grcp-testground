@@ -7,28 +7,28 @@
 namespace core::util
 {
 template <typename T,
-          T Min = (std::numeric_limits<T>::min)(),
-          T Max = (std::numeric_limits<T>::max)()>
+          T MinValue = (std::numeric_limits<T>::min)(),
+          T MaxValue = (std::numeric_limits<T>::max)()>
 class WrapAround
-    : boost::addable<WrapAround<T, Min, Max>>
-    , boost::subtractable<WrapAround<T, Min, Max>>
-    , boost::dividable<WrapAround<T, Min, Max>>
-    , boost::multipliable<WrapAround<T, Min, Max>>
-    , boost::incrementable<WrapAround<T, Min, Max>>
-    , boost::decrementable<WrapAround<T, Min, Max>>
+    : boost::incrementable<WrapAround<T, MinValue, MaxValue>>
+    , boost::decrementable<WrapAround<T, MinValue, MaxValue>>
 {
     static_assert(boost::is_arithmetic<T>::value, "T must be an arithmetic type.");
     T m_value;
 
   public:
+    constexpr static T Min = MinValue;
+    constexpr static T Max = MaxValue;
+
     WrapAround()
-        : m_value(Min)
+        : m_value(MinValue)
     {
     }
 
     explicit WrapAround(T value)
-        : m_value(Min)
+        : m_value(MinValue)
     {
+        wrap(value);
     }
 
     T value() const
@@ -51,26 +51,6 @@ class WrapAround
     {
         wrap(--m_value);
         return *this;
-    }
-
-    WrapAround operator+=(const WrapAround& rhs)
-    {
-        return { m_value + rhs.m_value };
-    }
-
-    WrapAround operator-=(const WrapAround& rhs)
-    {
-        return { m_value - rhs.m_value };
-    }
-
-    WrapAround operator*=(const WrapAround& rhs)
-    {
-        return { m_value * rhs.m_value };
-    }
-
-    WrapAround operator/=(const WrapAround& rhs)
-    {
-        return { m_value / rhs.m_value };
     }
 
     bool operator==(const WrapAround& rhs) const
@@ -103,24 +83,60 @@ class WrapAround
         return !(*this < rhs);
     }
 
+    template <typename U>
+    bool operator==(const U& rhs) const
+    {
+        return m_value == rhs;
+    }
+
+    template <typename U>
+    bool operator!=(const U& rhs) const
+    {
+        return m_value != rhs;
+    }
+
+    template <typename U>
+    bool operator<(const U& rhs) const
+    {
+        return m_value < rhs;
+    }
+
+    template <typename U>
+    bool operator>(const U& rhs) const
+    {
+        return m_value > rhs;
+    }
+
+    template <typename U>
+    bool operator<=(const U& rhs) const
+    {
+        return !(rhs < *this);
+    }
+
+    template <typename U>
+    bool operator>=(const U& rhs) const
+    {
+        return !(*this < rhs);
+    }
+
   private:
     void wrap(T value)
     {
         // If the wrap around limits are the data types natural min and max,
         // we can take advantage of the hardware over/underflow to wrap.
-        if constexpr (Min == (std::numeric_limits<T>::min)() && Max == (std::numeric_limits<T>::max)())
+        if constexpr (MinValue == (std::numeric_limits<T>::min)() && MaxValue == (std::numeric_limits<T>::max)())
         {
             m_value = value;
             return;
         }
 
-        if (value < Min)
+        if (value < MinValue)
         {
-            m_value = Max;
+            m_value = MaxValue;
         }
-        else if (value > Max)
+        else if (value > MaxValue)
         {
-            m_value = Min;
+            m_value = MinValue;
         }
         else
         {

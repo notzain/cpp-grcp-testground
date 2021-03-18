@@ -2,15 +2,19 @@
 #include <spdlog/async.h>
 #include <spdlog/async_logger.h>
 #include <spdlog/sinks/basic_file_sink.h>
+#include <spdlog/sinks/null_sink.h>
 #include <spdlog/sinks/stdout_color_sinks.h>
 
 namespace core::util
 {
+Logger::Logger()
+    : m_logger(spdlog::create<spdlog::sinks::null_sink_st>("null_logger"))
+{
+    spdlog::init_thread_pool(8192, 1);
+}
 
 void Logger::initialize(Options options)
 {
-    spdlog::init_thread_pool(8192, 1);
-
     std::vector<spdlog::sink_ptr> sinks{
         std::make_shared<spdlog::sinks::stdout_color_sink_mt>(),
         std::make_shared<spdlog::sinks::basic_file_sink_mt>(std::move(options.logPath))
@@ -23,10 +27,9 @@ void Logger::initialize(Options options)
         spdlog::thread_pool(),
         spdlog::async_overflow_policy::block);
 
-    spdlog::register_logger(m_logger);
+    m_logger->set_pattern("[%Y-%m-%d %T.%e] [%n] [%^%L%$] [%t | %s:%# - %!] %v");
 
-    m_debugLogger = spdlog::stdout_color_mt("Debug");
-    m_debugLogger->set_pattern("[%Y-%m-%d %T.%e] [%n] [%t | %s - %!:%#] [%^%l%$] %v");
+    spdlog::register_logger(m_logger);
 }
 
 std::shared_ptr<spdlog::logger> Logger::log()
@@ -34,14 +37,8 @@ std::shared_ptr<spdlog::logger> Logger::log()
     return m_logger;
 }
 
-std::shared_ptr<spdlog::logger> Logger::debug()
-{
-    return m_debugLogger;
-}
-
 void Logger::setLevel(spdlog::level::level_enum level)
 {
-    m_debugLogger->set_level(level);
     m_logger->set_level(level);
 }
 

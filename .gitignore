@@ -34,6 +34,7 @@
 # Ignore the out of source build directory
 cmake-build-*/
 build/
+out/**
 .idea/**
 .cache/**
 .vscode/**

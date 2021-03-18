@@ -2,39 +2,59 @@
 
 #include <atomic>
 #include <cstdint>
+#include <future>
 #include <string_view>
 #include <thread>
 #include <vector>
 
 #include "core/net/socket/AsyncSocket.h"
+#include "core/traits/async/Resolver.h"
 #include "core/util/Result.h"
 
 namespace core::net
 {
+template <typename ResultType>
 class IScanner
 {
   public:
     virtual ~IScanner() = default;
-    virtual util::Result<int> ping(std::string_view host) = 0;
+    virtual util::Result<ResultType> ping(std::string_view host) = 0;
 };
 
-class IAsyncScanner : public IScanner
+template <typename ResultType>
+class IAsyncScanner
+    : public IScanner<ResultType>
+    , public traits::ExternalResolver
 {
-    std::atomic_bool m_readStopToken;
-    std::thread m_readThread;
-
     std::shared_ptr<IAsyncSocket> m_asyncSocket;
 
   public:
-    IAsyncScanner(std::shared_ptr<IAsyncSocket> asyncSocket);
-    virtual ~IAsyncScanner();
+    IAsyncScanner(std::shared_ptr<IAsyncSocket> asyncSocket)
+        : traits::ExternalResolver(std::chrono::milliseconds(100))
+        , m_asyncSocket(std::move(asyncSocket))
+    {
+    }
 
-    void startReading();
-    void stopReading();
+    virtual ~IAsyncScanner() = default;
 
-    virtual void onPacketReceived(std::uint8_t* bytes, std::size_t len) = 0;
+    virtual std::future<ResultType> pingAsync(std::string_view host) = 0;
 
   private:
-    void read();
+    traits::ExternalResolver::Action attemptRead() override
+    {
+        if (auto bytesRead = m_asyncSocket->nextReceivedPacket())
+        {
+            onPacketReceived(bytesRead->data(), bytesRead->size());
+            return traits::ExternalResolver::Action::Continue;
+        }
+        else
+        {
+            handleTimeouts();
+            return traits::ExternalResolver::Action::Timeout;
+        }
+    };
+
+    virtual void onPacketReceived(std::uint8_t* bytes, std::size_t len) = 0;
+    virtual void handleTimeouts() = 0;
 };
 } // namespace core::net
