@@ -5,6 +5,7 @@
 #include <array>
 #include <chrono>
 #include <cstdint>
+#include <deque>
 #include <functional>
 #include <future>
 #include <iostream>
@@ -24,12 +25,14 @@
 #include <boost/asio.hpp>
 #include <boost/operators.hpp>
 #include <boost/type_traits.hpp>
+#include <fmt/chrono.h>
 #include <fmt/format.h>
 #include <nlohmann/json.hpp>
 #include <nonstd/expected.hpp>
 // clang-format off
 #include <spdlog/spdlog.h>
 #include <spdlog/fmt/bin_to_hex.h>
+#include <spdlog/fmt/chrono.h>
 #include <spdlog/fmt/fmt.h>
 // clang-format on
 

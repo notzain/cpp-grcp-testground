@@ -27,7 +27,17 @@ void Logger::initialize(Options options)
         spdlog::thread_pool(),
         spdlog::async_overflow_policy::block);
 
-    m_logger->set_pattern("[%Y-%m-%d %T.%e] [%n] [%^%L%$] [%t | %s:%# - %!] %v");
+    switch (options.sourceStyle)
+    {
+    case Logger::Options::SourceStyle::BaseFile: {
+        m_logger->set_pattern("[%Y-%m-%d %T.%e] [%n] [%^%L%$] [%t | %s:%# - %!] %v");
+    }
+    break;
+    case Logger::Options::SourceStyle::RelativePath: {
+        m_logger->set_pattern("[%Y-%m-%d %T.%e] [%n] [%^%L%$] [%t | %g:%# - %!] %v");
+    }
+    break;
+    }
 
     spdlog::register_logger(m_logger);
 }

@@ -1,5 +1,4 @@
 [requires]
-grpc/1.34.1@inexorgame/stable
 spdlog/1.8.2
 boost/1.75.0
 nlohmann_json/3.9.1
