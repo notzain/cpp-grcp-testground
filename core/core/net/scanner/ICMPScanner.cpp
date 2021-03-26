@@ -38,7 +38,7 @@ util::Result<ICMPResponse> ICMPScanner::ping(std::string_view host)
     return fut.get();
 }
 
-std::future<ICMPResponse> core::net::ICMPScanner::pingAsync(std::string_view host)
+std::future<ICMPResponse> net::ICMPScanner::pingAsync(std::string_view host)
 {
     pcpp::IcmpLayer icmpLayer;
     icmpLayer.setEchoRequestData(std::hash<std::thread::id>()(std::this_thread::get_id()),

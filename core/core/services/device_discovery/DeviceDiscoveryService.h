@@ -23,7 +23,7 @@ class DeviceDiscoveryTask
 
 class IcmpDeviceDiscoveryTask : public DeviceDiscoveryTask
 {
-    class IcmpPingResolver : public core::traits::FutureResolver<core::net::ICMPResponse>
+    class IcmpPingResolver : public traits::FutureResolver<net::ICMPResponse>
     {
         IcmpDeviceDiscoveryTask* m_discoveryTask;
 
@@ -34,7 +34,7 @@ class IcmpDeviceDiscoveryTask : public DeviceDiscoveryTask
         {
         }
 
-        void onNextItem(const core::net::ICMPResponse& icmpResponse) override
+        void onNextItem(const net::ICMPResponse& icmpResponse) override
         {
             CORE_INFO("Reply from '{}' to '{}' took {}",
                       icmpResponse.srcIp.toString(),
@@ -87,7 +87,7 @@ class DeviceDiscoveryService
 
     void runOnce(std::string_view beginIp, std::string_view endIp)
     {
-        for (const auto ip : core::util::rangeOf<pcpp::IPv4Address>({ beginIp.data() }, { endIp.data() }))
+        for (const auto ip : util::rangeOf<pcpp::IPv4Address>({ beginIp.data() }, { endIp.data() }))
         {
             discover(ip.toString());
         }

@@ -23,7 +23,7 @@ class SocketPool
 
     void shutdown();
 
-    std::shared_ptr<core::net::ICMPSocket> createIcmpSocket() override;
-    std::shared_ptr<core::net::RawSocket> createRawSocket(NetworkInterface& networkInterface) override;
+    std::shared_ptr<net::ICMPSocket> createIcmpSocket() override;
+    std::shared_ptr<net::RawSocket> createRawSocket(NetworkInterface& networkInterface) override;
 };
 } // namespace core::net

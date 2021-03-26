@@ -9,8 +9,8 @@
 namespace core::models
 {
 class Device
-    : public core::traits::Printable<Device>
-    , public core::traits::JsonSerializer
+    : public traits::Printable<Device>
+    , public traits::JsonSerializer
 {
     pcpp::IPv4Address m_ipAddress;
     pcpp::MacAddress m_macAddress;

@@ -34,12 +34,12 @@ SocketPool& SocketPool::defaultPool()
     return socketPool;
 }
 
-std::shared_ptr<core::net::ICMPSocket> SocketPool::createIcmpSocket()
+std::shared_ptr<net::ICMPSocket> SocketPool::createIcmpSocket()
 {
     return std::make_shared<ICMPSocket>(m_ioService);
 }
 
-std::shared_ptr<core::net::RawSocket> SocketPool::createRawSocket(NetworkInterface& networkInterface)
+std::shared_ptr<net::RawSocket> SocketPool::createRawSocket(NetworkInterface& networkInterface)
 {
     return std::make_shared<RawSocket>(networkInterface);
 }
