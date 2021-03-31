@@ -18,11 +18,12 @@ class Logger
     {
         std::string applicationName;
         std::string logPath;
+        bool verbose = false;
         enum class SourceStyle
         {
             BaseFile,
             RelativePath
-        } sourceStyle;
+        } sourceStyle = SourceStyle::BaseFile;
     };
 
     void initialize(Options options);

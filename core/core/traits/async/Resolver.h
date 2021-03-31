@@ -94,11 +94,11 @@ class QueueResolver : public detail::Resolver
     }
 };
 
-template <typename T>
+template <typename Id, typename T>
 class FutureResolver : public detail::Resolver
 {
     std::mutex m_queueMutex;
-    std::deque<std::future<T>> m_queue;
+    std::deque<std::pair<Id, std::future<T>>> m_queue;
 
     std::chrono::milliseconds m_cycleTimeout;
 
@@ -113,12 +113,14 @@ class FutureResolver : public detail::Resolver
         stop();
     }
 
-    virtual void onNextItem(const T& item) = 0;
+    virtual void onSuccess(const T& item) = 0;
 
-    void enqueue(std::future<T>&& item)
+    virtual void onFailure(const Id& id, std::string_view error) = 0;
+
+    void enqueue(const Id& id, std::future<T>&& item)
     {
         std::lock_guard g(m_queueMutex);
-        m_queue.push_back(std::move(item));
+        m_queue.emplace_back(id, std::move(item));
     }
 
     bool empty() const
@@ -137,19 +139,21 @@ class FutureResolver : public detail::Resolver
     void read() override
     {
         std::lock_guard g(m_queueMutex);
-        auto readyFuture = std::find_if(m_queue.begin(), m_queue.end(), [](const auto& fut) {
+        auto readyFuture = std::find_if(m_queue.begin(), m_queue.end(), [](const auto& item) {
+            const auto& [_, fut] = item;
             return fut.wait_for(std::chrono::milliseconds(0)) == std::future_status::ready;
         });
 
         if (readyFuture != m_queue.end())
         {
+            auto& [id, fut] = *readyFuture;
             try
             {
-                onNextItem((*readyFuture).get());
+                onSuccess(fut.get());
             }
             catch (const std::exception& e)
             {
-                CORE_WARN(e.what());
+                onFailure(id, e.what());
             }
             m_queue.erase(readyFuture);
         }

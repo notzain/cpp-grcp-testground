@@ -27,17 +27,28 @@ void Logger::initialize(Options options)
         spdlog::thread_pool(),
         spdlog::async_overflow_policy::block);
 
-    switch (options.sourceStyle)
-    {
-    case Logger::Options::SourceStyle::BaseFile: {
-        m_logger->set_pattern("[%Y-%m-%d %T.%e] [%n] [%^%L%$] [%t | %s:%# - %!] %v");
-    }
-    break;
-    case Logger::Options::SourceStyle::RelativePath: {
-        m_logger->set_pattern("[%Y-%m-%d %T.%e] [%n] [%^%L%$] [%t | %g:%# - %!] %v");
-    }
-    break;
-    }
+    m_logger->set_pattern(
+        fmt::format("[%^%-7l%$] [%Y-%m-%d %T.%e] {}%v",
+                    [&]() {
+                        if (options.verbose)
+                        {
+                            switch (options.sourceStyle)
+                            {
+                            case Logger::Options::SourceStyle::BaseFile: {
+                                return "[%t | %s:%# - %!]\n";
+                            }
+                            break;
+                            case Logger::Options::SourceStyle::RelativePath: {
+                                return "[%t | %g:%# - %!]\n";
+                            }
+                            break;
+                            }
+                        }
+                        else
+                        {
+                            return "";
+                        }
+                    }()));
 
     spdlog::register_logger(m_logger);
 }
