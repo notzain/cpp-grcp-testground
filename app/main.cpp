@@ -1,3 +1,4 @@
+#include "fmt/chrono.h"
 #include <core/models/net/Device.h>
 #include <core/net/socket/SocketPool.h>
 #include <core/services/device_discovery/DeviceDiscoveryService.h>
@@ -37,15 +38,17 @@ int main(int argc, const char** argv)
         core::net::DeviceDiscoveryTaskBuilder()
             .construct<core::net::IcmpDeviceDiscoveryTask>(core::net::SocketPool::defaultPool().createIcmpSocket())
             .withSuccessCallback([](const auto& result) {
-                CORE_INFO("'{}' -> '{}' in {} arrived on {}",
+                const auto timepoint = std::chrono::system_clock::to_time_t(result.completedAt);
+                CORE_INFO("'{}' -> '{}' in {} arrived on {:%c}",
                           result.srcIp,
                           result.dstIp,
                           result.responseTime,
-                          result.completedAt);
+                          fmt::localtime(timepoint));
             })
             .withFailureCallback([](const auto& error) {
-                CORE_INFO("'{}' failed",
-                          error.srcIp);
+                CORE_INFO("'{}' -> '{}' failed",
+                          error.srcIp,
+                          error.dstIp);
             }));
 
     dds.discover("192.168.178.1", "192.168.178.10");

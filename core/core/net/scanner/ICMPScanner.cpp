@@ -27,18 +27,25 @@ ICMPScanner::ICMPScanner(std::shared_ptr<ICMPSocket> socket)
 {
 }
 
-util::Result<ICMPResponse> ICMPScanner::ping(std::string_view host)
+util::Result<ICMPResponse, IcmpError> ICMPScanner::ping(std::string_view host)
 {
     auto fut = pingAsync(host);
     if (fut.wait_for(std::chrono::seconds(5)) == std::future_status::timeout)
     {
+        const auto& request = m_pendingRequests[host.data()];
+        IcmpError error{
+            pcpp::IPv4Address(host.data()),
+            request.dstIp,
+            IcmpError::Error::Timeout
+        };
+
         m_pendingRequests.erase(host.data());
-        return util::Result<std::vector<std::uint8_t>>::unexpected("ICMP ping timed out.");
+        return util::Result<>::unexpected(std::move(error));
     }
     return fut.get();
 }
 
-std::future<ICMPResponse> net::ICMPScanner::pingAsync(std::string_view host)
+std::future<util::Result<ICMPResponse, IcmpError>> net::ICMPScanner::pingAsync(std::string_view host)
 {
     pcpp::IcmpLayer icmpLayer;
     icmpLayer.setEchoRequestData(std::hash<std::thread::id>()(std::this_thread::get_id()),
@@ -57,7 +64,7 @@ std::future<ICMPResponse> net::ICMPScanner::pingAsync(std::string_view host)
         CORE_WARN(bytesSent.error());
     }
 
-    m_pendingRequests[host.data()] = Request{ {}, std::chrono::system_clock::now() };
+    m_pendingRequests[host.data()] = Request{ host.data(), {}, std::chrono::system_clock::now() };
     return m_pendingRequests[host.data()].promise.get_future();
 }
 
@@ -95,12 +102,13 @@ void ICMPScanner::handleTimeouts()
     static auto defaultTimeout = std::chrono::seconds(5);
     for (auto it = m_pendingRequests.begin(); it != m_pendingRequests.end(); /* empty */)
     {
-        auto& [_, req] = *it;
+        auto& [host, req] = *it;
         if (now - req.time >= defaultTimeout)
         {
-            req.promise.set_exception(
-                std::make_exception_ptr(
-                    std::runtime_error(fmt::format("ICMP Request timed out with {}", defaultTimeout))));
+            req.promise.set_value(util::Result<>::unexpected(IcmpError{
+                pcpp::IPv4Address(host),
+                req.dstIp,
+                IcmpError::Error::Timeout }));
 
             it = m_pendingRequests.erase(it);
         }

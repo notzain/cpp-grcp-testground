@@ -13,17 +13,17 @@
 
 namespace core::net
 {
-template <typename ResultType>
+template <typename ResultType, typename ErrorType>
 class IScanner
 {
   public:
     virtual ~IScanner() = default;
-    virtual util::Result<ResultType> ping(std::string_view host) = 0;
+    virtual util::Result<ResultType, ErrorType> ping(std::string_view host) = 0;
 };
 
-template <typename ResultType>
+template <typename ResultType, typename ErrorType>
 class IAsyncScanner
-    : public IScanner<ResultType>
+    : public IScanner<ResultType, ErrorType>
     , public traits::ExternalResolver
 {
     std::shared_ptr<IAsyncSocket> m_asyncSocket;
@@ -37,7 +37,7 @@ class IAsyncScanner
 
     virtual ~IAsyncScanner() = default;
 
-    virtual std::future<ResultType> pingAsync(std::string_view host) = 0;
+    virtual std::future<util::Result<ResultType, ErrorType>> pingAsync(std::string_view host) = 0;
 
   private:
     traits::ExternalResolver::Action attemptRead() override

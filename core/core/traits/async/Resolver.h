@@ -115,7 +115,7 @@ class FutureResolver : public detail::Resolver
 
     virtual void onSuccess(const T& item) = 0;
 
-    virtual void onFailure(const Id& id, std::string_view error) = 0;
+    virtual void onException(const Id& id, std::string_view error) = 0;
 
     void enqueue(const Id& id, std::future<T>&& item)
     {
@@ -153,7 +153,7 @@ class FutureResolver : public detail::Resolver
             }
             catch (const std::exception& e)
             {
-                onFailure(id, e.what());
+                onException(id, e.what());
             }
             m_queue.erase(readyFuture);
         }

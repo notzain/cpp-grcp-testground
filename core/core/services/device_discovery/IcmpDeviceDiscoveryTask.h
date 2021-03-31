@@ -9,15 +9,15 @@ namespace core::net
 {
 class IcmpDeviceDiscoveryTask;
 
-class IcmpPingResolver : public traits::FutureResolver<std::string, net::ICMPResponse>
+class IcmpPingResolver : public traits::FutureResolver<std::string, util::Result<net::ICMPResponse, net::IcmpError>>
 {
     IcmpDeviceDiscoveryTask* m_discoveryTask;
 
   public:
     IcmpPingResolver(IcmpDeviceDiscoveryTask* discoveryTask);
 
-    void onSuccess(const net::ICMPResponse& icmpResponse) override;
-    void onFailure(const std::string& id, std::string_view error) override;
+    void onSuccess(const util::Result<net::ICMPResponse, net::IcmpError>& icmpResponse) override;
+    void onException(const std::string& id, std::string_view error) override;
 };
 
 class IcmpDeviceDiscoveryTask : public DeviceDiscoveryTask

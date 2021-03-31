@@ -1,4 +1,5 @@
 #include "IcmpDeviceDiscoveryTask.h"
+#include "core/util/logger/Logger.h"
 
 #include <chrono>
 #include <spdlog/fmt/chrono.h>
@@ -11,19 +12,30 @@ IcmpPingResolver::IcmpPingResolver(IcmpDeviceDiscoveryTask* discoveryTask)
 {
 }
 
-void IcmpPingResolver::onSuccess(const net::ICMPResponse& icmpResponse)
+void IcmpPingResolver::onSuccess(const util::Result<net::ICMPResponse, net::IcmpError>& icmpResponse)
 {
-    m_discoveryTask->addSuccess(icmpResponse.dstIp.toString(),
-                                { icmpResponse.dstIp.toString(),
-                                  icmpResponse.srcIp.toString(),
-                                  icmpResponse.ttl,
-                                  icmpResponse.responseTime,
-                                  std::chrono::system_clock::now() });
+    if (icmpResponse)
+    {
+        m_discoveryTask->addSuccess(icmpResponse->dstIp.toString(),
+                                    { icmpResponse->dstIp.toString(),
+                                      icmpResponse->srcIp.toString(),
+                                      icmpResponse->ttl,
+                                      icmpResponse->responseTime,
+                                      std::chrono::system_clock::now() });
+    }
+    else
+    {
+        const auto& error = icmpResponse.error();
+        m_discoveryTask->addError(error.dstIp.toString(),
+                                  { error.dstIp.toString(),
+                                    error.srcIp.toString(),
+                                    std::chrono::system_clock::now() });
+    }
 }
 
-void IcmpPingResolver::onFailure(const std::string& id, std::string_view error)
+void IcmpPingResolver::onException(const std::string& id, std::string_view error)
 {
-    m_discoveryTask->addError(id, { id });
+    CORE_ERROR("'{}' exception: {}", id, error);
 }
 
 IcmpDeviceDiscoveryTask::IcmpDeviceDiscoveryTask(std::shared_ptr<ICMPSocket> socket)

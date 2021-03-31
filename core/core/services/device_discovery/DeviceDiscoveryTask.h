@@ -25,6 +25,7 @@ class DeviceDiscoveryTask
     struct Error
     {
         std::string srcIp;
+        std::string dstIp;
         std::chrono::time_point<std::chrono::system_clock> completedAt;
     };
 

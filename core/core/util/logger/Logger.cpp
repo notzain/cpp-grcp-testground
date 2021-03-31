@@ -46,7 +46,7 @@ void Logger::initialize(Options options)
                         }
                         else
                         {
-                            return "";
+                            return "[%!] ";
                         }
                     }()));
 
