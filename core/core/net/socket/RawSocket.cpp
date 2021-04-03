@@ -1,7 +1,7 @@
 #include "RawSocket.h"
 #include "core/net/NetworkInterface.h"
 
-namespace core::net
+namespace net
 {
 RawSocket::RawSocket(NetworkInterface& networkInterface)
     : m_networkInterface(networkInterface)
@@ -50,4 +50,4 @@ nonstd::expected<std::vector<std::uint8_t>, std::string> RawSocket::receive(std:
 {
     return nonstd::make_unexpected("Not implemented");
 }
-} // namespace core::net
+} // namespace net

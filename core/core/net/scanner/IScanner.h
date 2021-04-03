@@ -11,7 +11,7 @@
 #include "core/traits/async/Resolver.h"
 #include "core/util/Result.h"
 
-namespace core::net
+namespace net
 {
 template <typename ResultType, typename ErrorType>
 class IScanner
@@ -57,4 +57,4 @@ class IAsyncScanner
     virtual void onPacketReceived(std::uint8_t* bytes, std::size_t len) = 0;
     virtual void handleTimeouts() = 0;
 };
-} // namespace core::net
+} // namespace net

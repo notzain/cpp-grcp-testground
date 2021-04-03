@@ -2,9 +2,7 @@
 #include "core/util/logger/Logger.h"
 
 #include <chrono>
-#include <spdlog/fmt/chrono.h>
-
-namespace core::net
+namespace net
 {
 IcmpPingResolver::IcmpPingResolver(IcmpDeviceDiscoveryTask* discoveryTask)
     : FutureResolver(std::chrono::milliseconds(100))
@@ -44,6 +42,11 @@ IcmpDeviceDiscoveryTask::IcmpDeviceDiscoveryTask(std::shared_ptr<ICMPSocket> soc
 {
 }
 
+// IcmpDeviceDiscoveryTask::~IcmpDeviceDiscoveryTask()
+// {
+//     stop();
+// }
+
 void IcmpDeviceDiscoveryTask::start()
 {
     m_icmpScanner.start();
@@ -60,4 +63,4 @@ void IcmpDeviceDiscoveryTask::discover(std::string_view host)
 {
     m_icmpResolver.enqueue(host.data(), m_icmpScanner.pingAsync(host));
 }
-} // namespace core::net
+} // namespace net

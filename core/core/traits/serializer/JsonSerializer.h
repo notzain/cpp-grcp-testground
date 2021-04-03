@@ -3,7 +3,7 @@
 #include "../Serializable.h"
 #include <nlohmann/json.hpp>
 
-namespace core::traits
+namespace traits
 {
 using JsonSerializer = Serializable<nlohmann::json>;
-} // namespace core::traits
+} // namespace traits

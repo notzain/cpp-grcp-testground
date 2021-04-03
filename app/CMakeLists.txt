@@ -16,6 +16,7 @@ target_link_libraries(app
     PRIVATE 
         core
         CONAN_PKG::docopt.cpp
+        CONAN_PKG::backward-cpp
 )
 
 if(NOT MSVC)

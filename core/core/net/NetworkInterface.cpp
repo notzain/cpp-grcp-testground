@@ -4,7 +4,7 @@
 
 #include <spdlog/fmt/fmt.h>
 
-namespace core::net
+namespace net
 {
 std::optional<NetworkInterface> NetworkInterface::m_defaultInterface = std::nullopt;
 
@@ -54,4 +54,4 @@ void NetworkInterface::setDefaultInterface(const NetworkInterface& networkInterf
 {
     m_defaultInterface = networkInterface;
 }
-} // namespace core::net
+} // namespace net

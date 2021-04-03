@@ -9,7 +9,6 @@
 #include <cstdint>
 #include <fmt/chrono.h>
 #include <fmt/format.h>
-#include <spdlog/fmt/bin_to_hex.h>
 #include <stdexcept>
 #include <thread>
 #include <utility>
@@ -19,7 +18,7 @@
 #include <IcmpLayer.h>
 #include <SystemUtils.h>
 
-namespace core::net
+namespace net
 {
 ICMPScanner::ICMPScanner(std::shared_ptr<ICMPSocket> socket)
     : IAsyncScanner(socket->toAsync())
@@ -108,7 +107,7 @@ void ICMPScanner::handleTimeouts()
             req.promise.set_value(util::Result<>::unexpected(IcmpError{
                 pcpp::IPv4Address(host),
                 req.dstIp,
-                IcmpError::Error::Timeout }));
+                IcmpError::Timeout }));
 
             it = m_pendingRequests.erase(it);
         }
@@ -118,4 +117,4 @@ void ICMPScanner::handleTimeouts()
         }
     }
 }
-} // namespace core::net
+} // namespace net

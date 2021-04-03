@@ -8,7 +8,7 @@
 
 #include "core/util/Result.h"
 
-namespace core::net
+namespace net
 {
 class DeviceDiscoveryTask
 {
@@ -60,4 +60,4 @@ class DeviceDiscoveryTask
 
     virtual std::function<void(const Error&)>& onPingFailed();
 };
-} // namespace core::net
+} // namespace net

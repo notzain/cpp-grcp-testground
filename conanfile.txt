@@ -7,6 +7,7 @@ docopt.cpp/0.6.3
 doctest/2.4.4
 pcapplusplus/20.08@bincrafters/stable
 expected-lite/0.5.0
+backward-cpp/1.5
 
 [options]
 # boost:without_stacktrace=True

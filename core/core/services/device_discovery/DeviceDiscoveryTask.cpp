@@ -1,6 +1,6 @@
 #include "DeviceDiscoveryTask.h"
 
-namespace core::net
+namespace net
 {
 void DeviceDiscoveryTask::addSuccess(const std::string& host, Success&& result)
 {
@@ -62,4 +62,4 @@ std::function<void(const DeviceDiscoveryTask::Success&)>& DeviceDiscoveryTask::o
     return m_onDevicePinged;
 }
 
-} // namespace core::net
+} // namespace net

@@ -2,7 +2,7 @@
 
 #include <fmt/format.h>
 
-namespace core::models
+namespace models
 {
 Device::Device(std::string_view ip, std::string_view mac)
     : m_ipAddress(ip.data())
@@ -33,4 +33,4 @@ nlohmann::json Device::serialize(nlohmann::json json) const
     };
     return json;
 }
-} // namespace core::models
+} // namespace models

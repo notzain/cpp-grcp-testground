@@ -1,7 +1,7 @@
 #pragma once
 #include <memory>
 
-namespace core::net
+namespace net
 {
 
 class ICMPSocket;
@@ -15,4 +15,4 @@ class ISocketPool
     virtual std::shared_ptr<ICMPSocket> createIcmpSocket() = 0;
     virtual std::shared_ptr<RawSocket> createRawSocket(NetworkInterface& networkInterface) = 0;
 };
-} // namespace core::net
+} // namespace net

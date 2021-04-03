@@ -2,7 +2,7 @@
 
 #include "DeviceDiscoveryTask.h"
 
-namespace core::net
+namespace net
 {
 class DeviceDiscoveryTaskBuilder
 {
@@ -52,4 +52,4 @@ class DeviceDiscoveryTaskBuilder
         return build();
     }
 };
-} // namespace core::net
+} // namespace net

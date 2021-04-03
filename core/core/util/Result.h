@@ -5,7 +5,7 @@
 #include <string>
 #include <type_traits>
 
-namespace core::util
+namespace util
 {
 template <typename T = void, typename Error = std::string>
 class Result : public nonstd::expected<T, Error>
@@ -19,4 +19,4 @@ class Result : public nonstd::expected<T, Error>
         return nonstd::make_unexpected<E>(std::move(err));
     }
 };
-} // namespace core::util
+} // namespace util

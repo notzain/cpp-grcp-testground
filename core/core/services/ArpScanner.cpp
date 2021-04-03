@@ -1,6 +1,6 @@
 #include "ArpScanner.h"
 
-namespace core::services
+namespace services
 {
 void ArpScanner::DoTest()
 {
@@ -12,5 +12,4 @@ nlohmann::json ArpScanner::serialize( nlohmann::json json ) const
     return json;
 }
 
-
-} // namespace core::services
+} // namespace services

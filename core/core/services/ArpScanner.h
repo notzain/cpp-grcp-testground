@@ -3,11 +3,11 @@
 #include "core/traits/Printable.h"
 #include "core/traits/serializer/JsonSerializer.h"
 
-namespace core::services
+namespace services
 {
 class ArpScanner
-    : core::traits::JsonSerializer
-    , core::traits::Printable<ArpScanner>
+    : traits::JsonSerializer
+    , traits::Printable<ArpScanner>
 {
   public:
     void DoTest();
@@ -19,4 +19,4 @@ class ArpScanner
         return serialize().dump();
     }
 };
-} // namespace core::services
+} // namespace services

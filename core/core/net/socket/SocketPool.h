@@ -5,7 +5,7 @@
 #include <boost/asio.hpp>
 #include <thread>
 
-namespace core::net
+namespace net
 {
 
 class SocketPool
@@ -26,4 +26,4 @@ class SocketPool
     std::shared_ptr<net::ICMPSocket> createIcmpSocket() override;
     std::shared_ptr<net::RawSocket> createRawSocket(NetworkInterface& networkInterface) override;
 };
-} // namespace core::net
+} // namespace net

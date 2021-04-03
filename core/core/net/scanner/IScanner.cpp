@@ -2,6 +2,6 @@
 #include "core/traits/async/Resolver.h"
 #include <chrono>
 
-namespace core::net
+namespace net
 {
-} // namespace core::net
+} // namespace net

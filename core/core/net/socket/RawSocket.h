@@ -3,7 +3,7 @@
 #include "ISocket.h"
 #include <boost/asio.hpp>
 
-namespace core::net
+namespace net
 {
 class NetworkInterface;
 
@@ -24,4 +24,4 @@ class RawSocket : public ISocket
 
     nonstd::expected<std::vector<std::uint8_t>, std::string> receive(std::string_view host, std::size_t port);
 };
-} // namespace core::net
+} // namespace net

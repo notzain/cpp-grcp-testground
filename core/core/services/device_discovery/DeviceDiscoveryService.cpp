@@ -1,7 +1,7 @@
 #include "DeviceDiscoveryService.h"
 #include "core/net/IPv4Range.h"
 
-namespace core::net
+namespace net
 {
 void DeviceDiscoveryService::discover(std::string_view beginIp, std::string_view endIp)
 {
@@ -24,4 +24,4 @@ void DeviceDiscoveryService::addDiscoveryTask(std::unique_ptr<DeviceDiscoveryTas
     m_discoveryTasks.push_back(std::move(task));
     m_discoveryTasks.back()->start();
 }
-} // namespace core::net
+} // namespace net

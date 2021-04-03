@@ -4,7 +4,7 @@
 #include <iterator>
 #include <utility>
 
-namespace core::util
+namespace util
 {
 template <typename T>
 class Sequence
@@ -111,4 +111,4 @@ Sequence<T> rangeOf(T begin, T end)
     return Sequence<T>(begin, Sequence<T>{}.increment(end));
 }
 
-} // namespace core::util
+} // namespace util

@@ -2,7 +2,7 @@
 
 #include "core/util/logger/Logger.h"
 
-namespace core::net
+namespace net
 {
 ICMPSocket::ICMPSocket(boost::asio::io_service& ioService)
     : m_socket(std::make_shared<SocketType>(ioService))
@@ -78,4 +78,4 @@ std::shared_ptr<IAsyncSocket> ICMPSocket::toAsync()
 {
     return AsyncSocket<SocketType>::create(m_socket);
 }
-} // namespace core::net
+} // namespace net

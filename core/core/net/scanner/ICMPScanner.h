@@ -14,7 +14,7 @@
 #include "core/util/Result.h"
 #include "core/util/type/WrapAround.h"
 
-namespace core::net
+namespace net
 {
 
 struct ICMPResponse
@@ -30,7 +30,7 @@ struct IcmpError
 {
     pcpp::IPv4Address srcIp;
     pcpp::IPv4Address dstIp;
-    enum class Error
+    enum Error
     {
         Timeout
     } error;
@@ -51,7 +51,6 @@ class ICMPScanner : public IAsyncScanner<ICMPResponse, IcmpError>
 
   public:
     ICMPScanner(std::shared_ptr<ICMPSocket> socket);
-    virtual ~ICMPScanner() = default;
 
     util::Result<ICMPResponse, IcmpError> ping(std::string_view host) override;
     std::future<util::Result<ICMPResponse, IcmpError>> pingAsync(std::string_view host) override;
@@ -60,4 +59,4 @@ class ICMPScanner : public IAsyncScanner<ICMPResponse, IcmpError>
     void onPacketReceived(std::uint8_t* bytes, std::size_t len) override;
     void handleTimeouts() override;
 };
-} // namespace core::net
+} // namespace net

@@ -6,7 +6,7 @@
 #include "core/traits/Printable.h"
 #include "core/traits/serializer/JsonSerializer.h"
 
-namespace core::models
+namespace models
 {
 class Device
     : public traits::Printable<Device>
@@ -25,4 +25,4 @@ class Device
     std::string format() const override;
     nlohmann::json serialize(nlohmann::json json = {}) const override;
 };
-} // namespace core::models
+} // namespace models

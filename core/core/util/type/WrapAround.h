@@ -4,7 +4,7 @@
 #include <boost/type_traits.hpp>
 #include <limits>
 
-namespace core::util
+namespace util
 {
 template <typename T,
           T MinValue = (std::numeric_limits<T>::min)(),
@@ -144,4 +144,4 @@ class WrapAround
         }
     }
 };
-} // namespace core::util
+} // namespace util

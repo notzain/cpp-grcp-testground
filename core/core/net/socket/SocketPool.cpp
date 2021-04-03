@@ -3,7 +3,7 @@
 #include "ICMPSocket.h"
 #include "RawSocket.h"
 
-namespace core::net
+namespace net
 {
 SocketPool::SocketPool()
     : m_ioService()
@@ -44,4 +44,4 @@ std::shared_ptr<net::RawSocket> SocketPool::createRawSocket(NetworkInterface& ne
     return std::make_shared<RawSocket>(networkInterface);
 }
 
-} // namespace core::net
+} // namespace net

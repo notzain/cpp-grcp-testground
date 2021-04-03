@@ -6,7 +6,7 @@
 
 #include "DeviceDiscoveryTask.h"
 
-namespace core::net
+namespace net
 {
 class DeviceDiscoveryService
 {
@@ -31,4 +31,4 @@ class DeviceDiscoveryService
     void discover(std::string_view host);
     void discover(std::string_view beginIp, std::string_view endIp);
 };
-} // namespace core::net
+} // namespace net

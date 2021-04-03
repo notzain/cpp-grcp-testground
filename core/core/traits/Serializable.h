@@ -2,11 +2,11 @@
 
 #include <string>
 
-namespace core::traits
+namespace traits
 {
 template <typename SerializeType>
 struct Serializable
 {
     virtual SerializeType serialize(SerializeType = {}) const = 0;
 };
-} // namespace core::traits
+} // namespace traits

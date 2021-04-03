@@ -10,7 +10,7 @@
 #include <memory>
 #include <optional>
 
-namespace core::net
+namespace net
 {
 
 using PacketByteContainer = boost::container::static_vector<std::uint8_t, 128>;
@@ -77,7 +77,7 @@ class AsyncSocket
 
         // Wait for a reply. We prepare the buffer to receive up to 64KB.
         m_socket->async_receive(m_asioBuffer.prepare(65536),
-                                [self = shared_from_this()](const boost::system::error_code& ec, std::size_t length) { self->handleReceive(ec, length); });
+                                [self = this->shared_from_this()](const boost::system::error_code& ec, std::size_t length) { self->handleReceive(ec, length); });
     }
 
     void handleReceive(const boost::system::error_code& ec, std::size_t length)
@@ -100,4 +100,4 @@ class AsyncSocket
         startReceive();
     }
 };
-} // namespace core::net
+} // namespace net

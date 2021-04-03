@@ -8,7 +8,7 @@
 
 #include "core/util/Result.h"
 
-namespace core::net
+namespace net
 {
 class NetworkInterface : public std::enable_shared_from_this<NetworkInterface>
 {
@@ -25,4 +25,4 @@ class NetworkInterface : public std::enable_shared_from_this<NetworkInterface>
 
     pcpp::PcapLiveDevice* device;
 };
-} // namespace core::net
+} // namespace net

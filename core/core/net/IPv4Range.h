@@ -7,7 +7,7 @@
 #include <array>
 #include <cstdint>
 
-namespace core::util
+namespace util
 {
 template <>
 [[nodiscard]] inline pcpp::IPv4Address Sequence<pcpp::IPv4Address>::increment(const pcpp::IPv4Address& address) const
@@ -29,4 +29,4 @@ template <>
 
     return pcpp::IPv4Address(bytes.data());
 }
-} // namespace core::util
+} // namespace util

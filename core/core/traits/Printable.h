@@ -3,7 +3,7 @@
 #include <spdlog/fmt/ostr.h> // must be included
 #include <string>
 
-namespace core::traits
+namespace traits
 {
 template <typename Self>
 struct Printable
@@ -34,4 +34,4 @@ struct Printer
 
     virtual std::string format() const = 0;
 };
-} // namespace core::traits
+} // namespace traits

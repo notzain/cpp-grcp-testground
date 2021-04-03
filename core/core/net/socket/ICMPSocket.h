@@ -9,7 +9,7 @@
 
 #include "core/util/Result.h"
 
-namespace core::net
+namespace net
 {
 class ICMPSocket
     : public ISocket
@@ -33,4 +33,4 @@ class ICMPSocket
 
     std::shared_ptr<IAsyncSocket> toAsync() override;
 };
-} // namespace core::net
+} // namespace net

@@ -5,7 +5,7 @@
 #include "core/net/scanner/ICMPScanner.h"
 #include "core/traits/async/Resolver.h"
 
-namespace core::net
+namespace net
 {
 class IcmpDeviceDiscoveryTask;
 
@@ -35,4 +35,4 @@ class IcmpDeviceDiscoveryTask : public DeviceDiscoveryTask
 
     void discover(std::string_view host) override;
 };
-} // namespace core::net
+} // namespace net
