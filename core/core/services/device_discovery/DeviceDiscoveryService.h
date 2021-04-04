@@ -30,5 +30,7 @@ class DeviceDiscoveryService
 
     void discover(std::string_view host);
     void discover(std::string_view beginIp, std::string_view endIp);
+
+    void clearResults();
 };
 } // namespace net

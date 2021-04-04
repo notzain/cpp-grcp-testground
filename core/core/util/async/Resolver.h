@@ -13,56 +13,11 @@
 #include "core/util/logger/Logger.h"
 #include "fmt/chrono.h"
 
-namespace traits
+namespace util
 {
-struct Task
-{
-    struct RunAgain
-    {
-    };
-    struct RunAgainDelayed
-    {
-        std::chrono::milliseconds delay;
-    };
-    struct Cancel
-    {
-    };
-
-    using Continuation = std::variant<RunAgain, RunAgainDelayed, Cancel>;
-    virtual Continuation run() = 0;
-};
-class TaskRunner : public std::enable_shared_from_this<TaskRunner>
-{
-    boost::asio::io_context m_ioContext;
-    boost::asio::io_context::work m_keepAlive;
-    std::thread m_serviceThread;
-    std::shared_ptr<std::atomic<bool>> m_isAlive = std::make_shared<std::atomic<bool>>(true);
-
-  public:
-    TaskRunner();
-
-    static TaskRunner& defaultRunner()
-    {
-        static auto instance = TaskRunner();
-        return instance;
-    }
-
-    ~TaskRunner();
-
-    void post(std::shared_ptr<Task> task);
-
-    void postDelayed(std::shared_ptr<Task> task, const std::chrono::milliseconds& delay);
-
-    void stop();
-
-  private:
-    void resolve(std::shared_ptr<Task> task);
-};
 
 namespace detail
 {
-// Runner should get instance of Resolver
-
 class Resolver
 {
   public:
@@ -209,4 +164,4 @@ class FutureResolver : public detail::Resolver
         }
     }
 };
-} // namespace traits
+} // namespace util

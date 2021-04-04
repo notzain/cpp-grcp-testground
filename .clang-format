@@ -3,6 +3,7 @@ BasedOnStyle: Microsoft
 ColumnLimit: 0
 PointerAlignment: Left
 AllowAllArgumentsOnNextLine: true
+AllowShortBlocksOnASingleLine: Empty
 AlwaysBreakTemplateDeclarations: Yes
 BinPackArguments: false
 BinPackParameters: false

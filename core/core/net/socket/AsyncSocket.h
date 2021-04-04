@@ -84,7 +84,7 @@ class AsyncSocket
     {
         if (ec)
         {
-            CORE_WARN(ec.message());
+            // CORE_WARN(ec.message());
             startReceive();
             return;
         }

@@ -1,16 +1,12 @@
 #include "IcmpDeviceDiscoveryTask.h"
+#include "core/util/async/Task.h"
 #include "core/util/logger/Logger.h"
 
 #include <chrono>
+#include <exception>
 namespace net
 {
-IcmpPingResolver::IcmpPingResolver(IcmpDeviceDiscoveryTask* discoveryTask)
-    : FutureResolver(std::chrono::milliseconds(100))
-    , m_discoveryTask(discoveryTask)
-{
-}
-
-void IcmpPingResolver::onSuccess(const util::Result<net::ICMPResponse, net::IcmpError>& icmpResponse)
+void IcmpPingResolver::onCompletion(const util::Result<net::ICMPResponse, net::IcmpError>& icmpResponse)
 {
     if (icmpResponse)
     {
@@ -31,14 +27,23 @@ void IcmpPingResolver::onSuccess(const util::Result<net::ICMPResponse, net::Icmp
     }
 }
 
-void IcmpPingResolver::onException(const std::string& id, std::string_view error)
+void IcmpPingResolver::onException(const std::exception_ptr& e)
 {
-    CORE_ERROR("'{}' exception: {}", id, error);
+    try
+    {
+        if (e)
+        {
+            std::rethrow_exception(e);
+        }
+    }
+    catch (const std::exception& e)
+    {
+        CORE_ERROR("{}: {}", m_host, e.what());
+    }
 }
 
 IcmpDeviceDiscoveryTask::IcmpDeviceDiscoveryTask(std::shared_ptr<ICMPSocket> socket)
-    : m_icmpResolver(this)
-    , m_icmpScanner(std::move(socket))
+    : m_icmpScanner(std::move(socket))
 {
 }
 
@@ -50,17 +55,19 @@ IcmpDeviceDiscoveryTask::IcmpDeviceDiscoveryTask(std::shared_ptr<ICMPSocket> soc
 void IcmpDeviceDiscoveryTask::start()
 {
     m_icmpScanner.start();
-    m_icmpResolver.start();
 }
 
 void IcmpDeviceDiscoveryTask::stop()
 {
     m_icmpScanner.stop();
-    m_icmpResolver.stop();
 }
 
 void IcmpDeviceDiscoveryTask::discover(std::string_view host)
 {
-    m_icmpResolver.enqueue(host.data(), m_icmpScanner.pingAsync(host));
+    auto resolver = std::make_shared<IcmpPingResolver>(host.data(), this);
+    resolver->setFuture(m_icmpScanner.pingAsync(host));
+
+    util::TaskRunner::defaultRunner()
+        .post(resolver);
 }
 } // namespace net

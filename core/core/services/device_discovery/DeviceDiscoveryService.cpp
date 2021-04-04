@@ -24,4 +24,13 @@ void DeviceDiscoveryService::addDiscoveryTask(std::unique_ptr<DeviceDiscoveryTas
     m_discoveryTasks.push_back(std::move(task));
     m_discoveryTasks.back()->start();
 }
+
+void DeviceDiscoveryService::clearResults()
+{
+    for (auto& task : m_discoveryTasks)
+    {
+        task->clearResults();
+    }
+}
+
 } // namespace net
