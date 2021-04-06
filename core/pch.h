@@ -18,6 +18,7 @@
 #include <thread>
 #include <type_traits>
 #include <utility>
+#include <variant>
 #include <vector>
 
 /* external */
@@ -39,6 +40,7 @@
 /* internal */
 #include "core/util/Result.h"
 #include "core/util/Sequence.h"
+#include "core/util/logger/LogHelper.h"
 #include "core/util/logger/Logger.h"
 #include "core/traits/Serializable.h"
 #include "core/traits/Printable.h"

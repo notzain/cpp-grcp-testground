@@ -1,4 +1,5 @@
 #include "Task.h"
+#include "core/util/helper/Variant.h"
 
 namespace util
 {
@@ -45,27 +46,12 @@ void TaskRunner::postDelayed(std::shared_ptr<Task> task, const std::chrono::mill
     }).detach();
 }
 
-template <class... Ts>
-struct overload : Ts...
-{
-    using Ts::operator()...;
-};
-template <class... Ts>
-overload(Ts...) -> overload<Ts...>;
-
 void TaskRunner::resolve(std::shared_ptr<Task> task)
 {
-    std::visit(
-        overload{
-            [this, task](const Task::RunAgain&) {
-                post(task);
-            },
-            [this, task](const Task::RunAgainDelayed& run) {
-                postDelayed(task, run.delay);
-            },
-            [](const Task::End&) {
-                /* Do nothing */
-            } },
-        task->run());
+    matchVariant(
+        task->run(),
+        [this, task](const Task::RunAgain&) { post(task); },
+        [this, task](const Task::RunAgainDelayed& run) { postDelayed(task, run.delay); },
+        [](const Task::End&) { /* Do nothing */ });
 }
 } // namespace util

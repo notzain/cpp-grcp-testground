@@ -100,7 +100,7 @@ std::shared_ptr<spdlog::logger> Logger::log()
     return m_logger;
 }
 
-std::shared_ptr<spdlog::logger> Logger::dbg()
+std::shared_ptr<spdlog::logger> Logger::debug()
 {
     return m_dbg;
 }

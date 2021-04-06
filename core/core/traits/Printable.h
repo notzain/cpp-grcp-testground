@@ -20,9 +20,9 @@ struct Printable
 template <typename Type>
 struct Printer
 {
-    const Type &type;
-    Printer(const Type &t)
-        : type(t)
+    const Type& m_type;
+    Printer(const Type& t)
+        : m_type(t)
     {
     }
 
