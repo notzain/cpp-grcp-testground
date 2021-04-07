@@ -80,10 +80,8 @@ class IAsyncScanner
     {
         m_running.store(true);
 
-        auto task = std::make_shared<PingResolver>(this);
-        m_currentTask = task;
-        util::TaskRunner::defaultRunner()
-            .post(task);
+        m_currentTask = util::TaskRunner::defaultRunner()
+                            .post<PingResolver>(this);
     }
 
     // blocks till task is ended

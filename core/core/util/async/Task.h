@@ -3,6 +3,7 @@
 #include <boost/asio/io_context.hpp>
 #include <memory>
 #include <thread>
+#include <type_traits>
 #include <variant>
 
 namespace util
@@ -44,7 +45,27 @@ class TaskRunner
 
     void post(std::shared_ptr<Task> task);
 
+    template <typename T, typename... Args>
+    std::shared_ptr<T> post(Args&&... args)
+    {
+        static_assert(std::is_base_of_v<Task, T>, "T must derive from Task.");
+
+        auto task = std::make_shared<T>(std::forward<Args>(args)...);
+        post(task);
+        return task;
+    }
+
     void postDelayed(std::shared_ptr<Task> task, const std::chrono::milliseconds& delay);
+
+    template <typename T, typename... Args>
+    std::shared_ptr<T> postDelayed(Args&&... args, const std::chrono::milliseconds& delay)
+    {
+        static_assert(std::is_base_of<Task, T>(), "T must derive from Task.");
+
+        auto task = std::make_shared<T>(std::forward<Args>(args)...);
+        postDelayed(task, delay);
+        return task;
+    }
 
     void stop();
 
