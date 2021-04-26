@@ -5,7 +5,9 @@ target_include_directories(app
         ${CMAKE_CURRENT_BINARY_DIR}/generated
 )
 
-file(GLOB_RECURSE src_files CONFIGURE_DEPENDS *.h *.cpp)
+set(src_files
+    main.cpp
+)
 
 target_sources(app
     PRIVATE 

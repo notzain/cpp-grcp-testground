@@ -9,7 +9,10 @@ else()
     set(grpc_plugin ${CMAKE_BINARY_DIR}/build_tools/grpc_cpp_plugin)
 endif()
 
-file(GLOB_RECURSE hw_protos CONFIGURE_DEPENDS *.proto)
+set(hw_protos
+    byeworld.proto
+    helloworld.proto
+)
 
 function(generate_file list suffix output)
     set(${output} "")
