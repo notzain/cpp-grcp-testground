@@ -2,6 +2,7 @@
 
 #include "ICMPSocket.h"
 #include "RawSocket.h"
+#include "v2/IcmpSocket.h"
 
 namespace net
 {
@@ -37,6 +38,11 @@ SocketPool& SocketPool::defaultPool()
 std::shared_ptr<net::ICMPSocket> SocketPool::createIcmpSocket()
 {
     return std::make_shared<ICMPSocket>(m_ioService);
+}
+
+std::shared_ptr<net::v2::IcmpSocket> SocketPool::createIcmpSocketv2()
+{
+    return v2::IcmpSocket::create(m_ioService);
 }
 
 std::shared_ptr<net::RawSocket> SocketPool::createRawSocket(NetworkInterface& networkInterface)

@@ -47,7 +47,7 @@ util::Result<NetworkInterface> NetworkInterface::defaultInterface()
     if (m_defaultInterface.has_value())
         return *m_defaultInterface;
     else
-        return util::Result<NetworkInterface>::unexpected("No default interface was set.");
+        return Error(ErrorType::NotFound);
 }
 
 void NetworkInterface::setDefaultInterface(const NetworkInterface& networkInterface)

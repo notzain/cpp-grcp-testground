@@ -61,8 +61,8 @@ struct MapPrinter : public traits::Printer<T>
     std::string format() const override
     {
         std::stringstream ss;
-        const auto last = std::prev(m_type.end());
-        for (auto it = m_type.begin(); it != m_type.end(); ++it)
+        const auto last = std::prev(this->m_type.end());
+        for (auto it = this->m_type.begin(); it != this->m_type.end(); ++it)
         {
             const auto& [k, v] = *it;
             ss << "{ " << k << " : " << v << " }";

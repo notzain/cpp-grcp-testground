@@ -7,16 +7,45 @@
 
 namespace util
 {
-template <typename T = void, typename Error = std::string>
-class Result : public nonstd::expected<T, Error>
+namespace Error
+{
+enum ErrorType
+{
+    Aborted,
+    AlreadyExists,
+    Cancelled,
+    DeadlineExceeded,
+    FailedPrecondition,
+    InvalidArgument,
+    NotFound,
+    OutOfRange,
+    PermissionDenied,
+    ResourceExhausted,
+    TimedOut,
+    Unauthenticated,
+    Unavailable,
+    Unimplemented,
+    Unknown,
+};
+
+template <typename Err>
+inline auto Error(Err&& err)
+{
+    return nonstd::make_unexpected<Err>(std::move(err));
+}
+
+inline auto Error(ErrorType&& err) { return nonstd::make_unexpected<ErrorType>(std::move(err)); }
+
+}; // namespace Error
+
+template <typename T, typename Err = Error::ErrorType>
+class Result : public nonstd::expected<T, Err>
 {
   public:
-    using nonstd::expected<T, Error>::expected;
-
-    template <typename E>
-    static auto unexpected(E&& err)
-    {
-        return nonstd::make_unexpected<E>(std::move(err));
-    }
+    using nonstd::expected<T, Err>::expected;
 };
+
 } // namespace util
+
+using namespace util::Error;
+using util::Result;

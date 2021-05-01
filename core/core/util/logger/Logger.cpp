@@ -1,4 +1,5 @@
 #include "Logger.h"
+
 #include <spdlog/async.h>
 #include <spdlog/async_logger.h>
 #include <spdlog/pattern_formatter.h>
@@ -86,10 +87,7 @@ void Logger::initialize(Options options)
                             break;
                             }
                         }
-                        else
-                        {
-                            return "[%s:%#] ";
-                        }
+                        return "[%s:%#] ";
                     }())));
 
     spdlog::register_logger(m_logger);

@@ -11,49 +11,33 @@
 #include <nonstd/span.hpp>
 #include <optional>
 
-namespace net
+namespace net::v2
 {
-
 using PacketByteContainer = boost::container::static_vector<std::uint8_t, 128>;
 
-struct IAsyncSocket
+template <typename Protocol>
+class IAsyncSocket
 {
+  public:
+    using Endpoint = typename Protocol::Endpoint;
     virtual ~IAsyncSocket() = default;
-    virtual std::future<std::size_t> sendToAsync(std::string_view host, std::size_t port, void* data, std::size_t len) = 0;
+    virtual std::future<std::size_t> sendToAsync(const Endpoint&, nonstd::span<std::uint8_t> payload) = 0;
     virtual std::optional<PacketByteContainer> nextReceivedPacket() = 0;
 };
 
-struct ToAsync
+template <typename Protocol>
+class BoostAsyncSocket
+    : public IAsyncSocket<Protocol>
+    , public std::enable_shared_from_this<BoostAsyncSocket<Protocol>>
 {
-    virtual ~ToAsync() = default;
-    virtual std::shared_ptr<IAsyncSocket> toAsync() = 0;
-};
-
-template <typename Socket>
-class AsyncSocket
-    : public IAsyncSocket
-    , public std::enable_shared_from_this<AsyncSocket<Socket>>
-{
-    std::shared_ptr<Socket> m_socket;
+    using Socket = typename Protocol::Socket;
     boost::asio::streambuf m_asioBuffer;
-
     boost::lockfree::spsc_queue<PacketByteContainer> m_packetBuffer;
 
+  protected:
+    std::shared_ptr<Socket> m_socket;
+
   public:
-    static std::shared_ptr<AsyncSocket<Socket>> create(std::shared_ptr<Socket> socket)
-    {
-        // cant call make_shared here because ctor is private
-        auto self = std::shared_ptr<AsyncSocket<Socket>>(new AsyncSocket<Socket>(std::move(socket)));
-        self->startReceive();
-        return self;
-    }
-
-    std::future<std::size_t> sendToAsync(std::string_view host, std::size_t port, void* data, std::size_t len) override
-    {
-        auto remote_endpoint = boost::asio::ip::icmp::endpoint(boost::asio::ip::make_address_v4(host), port);
-        return m_socket->async_send_to(boost::asio::buffer(data, len), remote_endpoint, boost::asio::use_future);
-    }
-
     std::optional<PacketByteContainer> nextReceivedPacket() override
     {
         PacketByteContainer data;
@@ -64,8 +48,8 @@ class AsyncSocket
         return std::nullopt;
     }
 
-  private:
-    AsyncSocket(std::shared_ptr<Socket> socket)
+  protected:
+    BoostAsyncSocket(std::shared_ptr<Socket> socket)
         : m_socket(std::move(socket))
         , m_packetBuffer(1024)
     {
@@ -101,5 +85,4 @@ class AsyncSocket
         startReceive();
     }
 };
-
-} // namespace net
+} // namespace net::v2

@@ -30,10 +30,7 @@ struct IcmpError
 {
     pcpp::IPv4Address srcIp;
     pcpp::IPv4Address dstIp;
-    enum Error
-    {
-        Timeout
-    } error;
+    ErrorType error;
 };
 
 class ICMPScanner : public IAsyncScanner<ICMPResponse, IcmpError>

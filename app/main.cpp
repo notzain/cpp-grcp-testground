@@ -1,14 +1,14 @@
+#include <backward.hpp>
+#include <chrono>
 #include <core/models/net/Device.h>
 #include <core/net/socket/SocketPool.h>
+#include <core/net/socket/v2/IcmpSocket.h>
 #include <core/services/device_discovery/DeviceDiscoveryService.h>
 #include <core/services/device_discovery/DeviceDiscoveryTaskBuilder.h>
 #include <core/services/device_discovery/IcmpDeviceDiscoveryTask.h>
 #include <core/util/async/Resolver.h>
 #include <core/util/async/ThreadContext.h>
 #include <core/util/logger/Logger.h>
-
-#include <backward.hpp>
-#include <chrono>
 #include <docopt/docopt.h>
 #include <iostream>
 #include <thread>
@@ -37,16 +37,7 @@ int main(int argc, const char** argv)
         CORE_INFO("{} - {}", key, value);
     }
 
-    auto tc = util::ThreadContext::create();
-    tc->start();
-    for (int i = 0; i < 2; ++i)
-        tc->post([] {
-            std::this_thread::sleep_for(std::chrono::seconds(2));
-            CORE_INFO("WOOH 1");
-        });
-
-    std::getchar();
-    return 0;
+    auto socket = net::SocketPool::defaultPool().createIcmpSocketv2();
 
     net::DeviceDiscoveryService dds;
     dds.addDiscoveryTask(

@@ -6,8 +6,8 @@ namespace net
 {
 class DeviceDiscoveryTaskBuilder
 {
-    std::function<void(const DeviceDiscoveryTask::Success&)> m_onDevicePinged;
-    std::function<void(const DeviceDiscoveryTask::Error&)> m_onPingFailed;
+    std::function<void(const DeviceDiscoveryTask::TaskSuccess&)> m_onDevicePinged;
+    std::function<void(const DeviceDiscoveryTask::TaskError&)> m_onPingFailed;
     std::unique_ptr<DeviceDiscoveryTask> m_task;
 
   public:
@@ -22,14 +22,14 @@ class DeviceDiscoveryTaskBuilder
         return *this;
     }
 
-    DeviceDiscoveryTaskBuilder& withSuccessCallback(std::function<void(const DeviceDiscoveryTask::Success&)>&& func)
+    DeviceDiscoveryTaskBuilder& withSuccessCallback(std::function<void(const DeviceDiscoveryTask::TaskSuccess&)>&& func)
     {
         m_onDevicePinged = std::move(func);
 
         return *this;
     }
 
-    DeviceDiscoveryTaskBuilder& withFailureCallback(std::function<void(const DeviceDiscoveryTask::Error&)>&& func)
+    DeviceDiscoveryTaskBuilder& withFailureCallback(std::function<void(const DeviceDiscoveryTask::TaskError&)>&& func)
     {
         m_onPingFailed = std::move(func);
 

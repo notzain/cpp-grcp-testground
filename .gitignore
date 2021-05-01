@@ -40,3 +40,4 @@ out/**
 .vscode/**
 .vs/
 CMakeSettings.json
+compile_commands.json

@@ -2,7 +2,7 @@
 
 namespace net
 {
-void DeviceDiscoveryTask::addSuccess(const std::string& host, Success&& result)
+void DeviceDiscoveryTask::addSuccess(const std::string& host, TaskSuccess&& result)
 {
     if (m_onDevicePinged)
         m_onDevicePinged(result);
@@ -10,12 +10,12 @@ void DeviceDiscoveryTask::addSuccess(const std::string& host, Success&& result)
     m_results[host] = std::move(result);
 }
 
-void DeviceDiscoveryTask::addError(const std::string& host, Error&& error)
+void DeviceDiscoveryTask::addError(const std::string& host, TaskError&& error)
 {
     if (m_onPingFailed)
         m_onPingFailed(error);
 
-    m_results[host] = ResultType::unexpected(std::move(error));
+    m_results[host] = Error(std::move(error));
 }
 
 bool DeviceDiscoveryTask::hasResult(const std::string& host) const
@@ -52,12 +52,12 @@ void DeviceDiscoveryTask::clearResult(const std::string& host)
     m_results.erase(host);
 }
 
-std::function<void(const DeviceDiscoveryTask::Error&)>& DeviceDiscoveryTask::onPingFailed()
+std::function<void(const DeviceDiscoveryTask::TaskError&)>& DeviceDiscoveryTask::onPingFailed()
 {
     return m_onPingFailed;
 }
 
-std::function<void(const DeviceDiscoveryTask::Success&)>& DeviceDiscoveryTask::onDevicePinged()
+std::function<void(const DeviceDiscoveryTask::TaskSuccess&)>& DeviceDiscoveryTask::onDevicePinged()
 {
     return m_onDevicePinged;
 }

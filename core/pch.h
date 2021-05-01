@@ -30,6 +30,7 @@
 #include <fmt/format.h>
 #include <nlohmann/json.hpp>
 #include <nonstd/expected.hpp>
+#include <nonstd/span.hpp>
 // clang-format off
 #include <spdlog/spdlog.h>
 #include <spdlog/fmt/bin_to_hex.h>

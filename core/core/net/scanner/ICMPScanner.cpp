@@ -32,14 +32,11 @@ util::Result<ICMPResponse, IcmpError> ICMPScanner::ping(std::string_view host)
     if (fut.wait_for(std::chrono::seconds(5)) == std::future_status::timeout)
     {
         const auto& request = m_pendingRequests[host.data()];
-        IcmpError error{
+        m_pendingRequests.erase(host.data());
+        return Error(IcmpError{
             pcpp::IPv4Address(host.data()),
             request.dstIp,
-            IcmpError::Error::Timeout
-        };
-
-        m_pendingRequests.erase(host.data());
-        return util::Result<>::unexpected(std::move(error));
+            ErrorType::TimedOut });
     }
     return fut.get();
 }
@@ -104,10 +101,10 @@ void ICMPScanner::handleTimeouts()
         auto& [host, req] = *it;
         if (now - req.time >= defaultTimeout)
         {
-            req.promise.set_value(util::Result<>::unexpected(IcmpError{
+            req.promise.set_value(Error(IcmpError{
                 pcpp::IPv4Address(host),
                 req.dstIp,
-                IcmpError::Timeout }));
+                ErrorType::TimedOut }));
 
             it = m_pendingRequests.erase(it);
         }
