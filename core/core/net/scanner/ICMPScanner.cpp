@@ -3,6 +3,7 @@
 #include "IpAddress.h"
 #include "MacAddress.h"
 #include "core/net/scanner/IScanner.h"
+#include "core/net/socket/v2/IcmpSocket.h"
 #include "core/util/logger/Logger.h"
 
 #include <chrono>
@@ -20,7 +21,7 @@
 
 namespace net
 {
-ICMPScanner::ICMPScanner(v2::RawSocket::Ptr socket)
+ICMPScanner::ICMPScanner(v2::IcmpSocket::Ptr socket)
     : IAsyncScanner(socket)
     , m_socket(socket)
 {

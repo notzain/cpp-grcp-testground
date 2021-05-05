@@ -35,8 +35,6 @@ include(${CMAKE_CURRENT_BINARY_DIR}/conan.cmake)
 
 conan_add_remote(NAME bincrafters URL
                  https://api.bintray.com/conan/bincrafters/public-conan)
-conan_add_remote(NAME inexorgame URL
-                 https://api.bintray.com/conan/inexorgame/inexor-conan)
 
 conan_cmake_run(CONANFILE conanfile.txt BASIC_SETUP CMAKE_TARGETS BUILD missing)
 

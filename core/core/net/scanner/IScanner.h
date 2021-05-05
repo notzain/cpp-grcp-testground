@@ -9,7 +9,6 @@
 #include <thread>
 #include <vector>
 
-#include "core/net/socket/AsyncSocket.h"
 #include "core/net/socket/v2/ReceivingSocket.h"
 #include "core/util/Result.h"
 #include "core/util/async/Resolver.h"

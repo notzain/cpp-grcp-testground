@@ -30,7 +30,7 @@ class IcmpDeviceDiscoveryTask : public DeviceDiscoveryTask
     net::ICMPScanner m_icmpScanner;
 
   public:
-    IcmpDeviceDiscoveryTask(v2::RawSocket::Ptr socket);
+    IcmpDeviceDiscoveryTask(v2::IcmpSocket::Ptr socket);
 
     void start() override;
 
