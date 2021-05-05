@@ -42,7 +42,7 @@ void IcmpPingResolver::onException(const std::exception_ptr& e)
     }
 }
 
-IcmpDeviceDiscoveryTask::IcmpDeviceDiscoveryTask(std::shared_ptr<ICMPSocket> socket)
+IcmpDeviceDiscoveryTask::IcmpDeviceDiscoveryTask(v2::RawSocket::Ptr socket)
     : m_icmpScanner(std::move(socket))
 {
 }

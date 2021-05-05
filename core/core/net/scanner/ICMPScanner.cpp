@@ -20,9 +20,9 @@
 
 namespace net
 {
-ICMPScanner::ICMPScanner(std::shared_ptr<ICMPSocket> socket)
-    : IAsyncScanner(socket->toAsync())
-    , m_socket(std::move(socket))
+ICMPScanner::ICMPScanner(v2::RawSocket::Ptr socket)
+    : IAsyncScanner(socket)
+    , m_socket(socket)
 {
 }
 
@@ -51,13 +51,13 @@ std::future<util::Result<ICMPResponse, IcmpError>> net::ICMPScanner::pingAsync(s
                                  5);
     icmpLayer.computeCalculateFields();
 
-    if (auto bytesSent = m_socket->sendTo(host, 7, icmpLayer.getData(), icmpLayer.getDataLen()))
+    if (auto bytesSent = m_socket->sendTo({ host.data(), 7 }, { icmpLayer.getData(), icmpLayer.getDataLen() }))
     {
         CORE_INFO("Sent {} bytes to {}", *bytesSent, host);
     }
     else
     {
-        CORE_WARN(bytesSent.error());
+        CORE_WARN("{}", bytesSent.error());
     }
 
     m_pendingRequests[host.data()] = Request{ host.data(), {}, std::chrono::system_clock::now() };

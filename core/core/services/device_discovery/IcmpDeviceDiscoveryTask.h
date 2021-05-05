@@ -30,7 +30,7 @@ class IcmpDeviceDiscoveryTask : public DeviceDiscoveryTask
     net::ICMPScanner m_icmpScanner;
 
   public:
-    IcmpDeviceDiscoveryTask(std::shared_ptr<ICMPSocket> socket);
+    IcmpDeviceDiscoveryTask(v2::RawSocket::Ptr socket);
 
     void start() override;
 
