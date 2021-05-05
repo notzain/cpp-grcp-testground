@@ -21,6 +21,15 @@
 #include <variant>
 #include <vector>
 
+/* internal */
+#include "core/traits/Printable.h"
+#include "core/traits/Serializable.h"
+#include "core/traits/serializer/JsonSerializer.h"
+#include "core/util/Result.h"
+#include "core/util/Sequence.h"
+#include "core/util/logger/LogHelper.h"
+#include "core/util/logger/Logger.h"
+
 /* external */
 #include <boost/algorithm/string.hpp>
 #include <boost/asio.hpp>
@@ -28,6 +37,7 @@
 #include <boost/type_traits.hpp>
 #include <fmt/chrono.h>
 #include <fmt/format.h>
+#include <magic_enum.hpp>
 #include <nlohmann/json.hpp>
 #include <nonstd/expected.hpp>
 #include <nonstd/span.hpp>
@@ -37,12 +47,3 @@
 #include <spdlog/fmt/chrono.h>
 #include <spdlog/fmt/fmt.h>
 // clang-format on
-
-/* internal */
-#include "core/util/Result.h"
-#include "core/util/Sequence.h"
-#include "core/util/logger/LogHelper.h"
-#include "core/util/logger/Logger.h"
-#include "core/traits/Serializable.h"
-#include "core/traits/Printable.h"
-#include "core/traits/serializer/JsonSerializer.h"

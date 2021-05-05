@@ -42,7 +42,7 @@ int main(int argc, const char** argv)
     net::DeviceDiscoveryService dds;
     dds.addDiscoveryTask(
         net::DeviceDiscoveryTaskBuilder()
-            .construct<net::IcmpDeviceDiscoveryTask>(net::SocketPool::defaultPool().createIcmpSocket())
+            .construct<net::IcmpDeviceDiscoveryTask>(net::SocketPool::defaultPool().createIcmpSocketv2())
             .withSuccessCallback([](const auto& result) {
                 const auto timepoint = std::chrono::system_clock::to_time_t(result.completedAt);
                 CORE_INFO("'{}' -> '{}' in {} arrived on {:%c}",
@@ -67,7 +67,7 @@ int main(int argc, const char** argv)
         if (c == 'c')
             dds.clearResults();
         else
-            dds.discover("192.168.178.1", "192.168.178.10");
+            dds.discover("192.168.178.1", "192.168.178.255");
     }
 
     return 0;

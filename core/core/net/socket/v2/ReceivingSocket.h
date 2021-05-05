@@ -15,27 +15,23 @@ namespace net::v2
 {
 using PacketByteContainer = boost::container::static_vector<std::uint8_t, 128>;
 
-template <typename Protocol>
-class IAsyncSocket
+class SocketListener
 {
   public:
-    using Endpoint = typename Protocol::Endpoint;
-    virtual ~IAsyncSocket() = default;
-    virtual std::future<std::size_t> sendToAsync(const Endpoint&, nonstd::span<std::uint8_t> payload) = 0;
+    virtual ~SocketListener() = default;
     virtual std::optional<PacketByteContainer> nextReceivedPacket() = 0;
 };
 
 template <typename Protocol>
-class BoostAsyncSocket
-    : public IAsyncSocket<Protocol>
-    , public std::enable_shared_from_this<BoostAsyncSocket<Protocol>>
+class BoostSocketListener
+    : public SocketListener
+    , public std::enable_shared_from_this<BoostSocketListener<Protocol>>
 {
     using Socket = typename Protocol::Socket;
+    std::shared_ptr<Socket> m_socket;
+
     boost::asio::streambuf m_asioBuffer;
     boost::lockfree::spsc_queue<PacketByteContainer> m_packetBuffer;
-
-  protected:
-    std::shared_ptr<Socket> m_socket;
 
   public:
     std::optional<PacketByteContainer> nextReceivedPacket() override
@@ -49,7 +45,7 @@ class BoostAsyncSocket
     }
 
   protected:
-    BoostAsyncSocket(std::shared_ptr<Socket> socket)
+    BoostSocketListener(std::shared_ptr<Socket> socket)
         : m_socket(std::move(socket))
         , m_packetBuffer(1024)
     {

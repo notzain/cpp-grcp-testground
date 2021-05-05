@@ -19,7 +19,7 @@ class Socket
 
     virtual bool disconnect() = 0;
 
-    virtual util::Result<std::size_t> send(nonstd::span<std::uint8_t> data) = 0;
-    virtual util::Result<std::size_t> sendTo(const Endpoint& endpoint, nonstd::span<std::uint8_t> data) = 0;
+    virtual Result<std::size_t> send(nonstd::span<std::uint8_t> data) = 0;
+    virtual Result<std::size_t> sendTo(const Endpoint& endpoint, nonstd::span<std::uint8_t> data) = 0;
 };
 } // namespace net::v2

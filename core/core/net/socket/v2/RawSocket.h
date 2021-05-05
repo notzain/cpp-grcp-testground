@@ -8,22 +8,22 @@
 
 namespace net::v2
 {
-class IcmpSocket
+class RawSocket
     : public Socket<IcmpProtocol>
     , public BoostSocketListener<IcmpProtocol>
 {
     std::shared_ptr<IcmpProtocol::Socket> m_socket;
 
   public:
-    using Ptr = std::shared_ptr<IcmpSocket>;
-    static IcmpSocket::Ptr create(std::shared_ptr<IcmpProtocol::Socket> socket)
+    using Ptr = std::shared_ptr<RawSocket>;
+    static RawSocket::Ptr create(std::shared_ptr<IcmpProtocol::Socket> socket)
     {
-        auto self = std::shared_ptr<IcmpSocket>(new IcmpSocket(socket));
+        auto self = std::shared_ptr<RawSocket>(new RawSocket(socket));
         self->startReceive();
         return self;
     }
 
-    virtual ~IcmpSocket() = default;
+    virtual ~RawSocket() = default;
 
     bool connect() override { return true; }
     bool isConnected() const override { return true; }
@@ -47,7 +47,7 @@ class IcmpSocket
     }
 
   private:
-    IcmpSocket(std::shared_ptr<IcmpProtocol::Socket> socket)
+    RawSocket(std::shared_ptr<IcmpProtocol::Socket> socket)
         : BoostSocketListener(socket)
         , m_socket(socket)
     {

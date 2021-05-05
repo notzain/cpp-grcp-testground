@@ -10,6 +10,7 @@
 #include <vector>
 
 #include "core/net/socket/AsyncSocket.h"
+#include "core/net/socket/v2/ReceivingSocket.h"
 #include "core/util/Result.h"
 #include "core/util/async/Resolver.h"
 #include "core/util/async/Task.h"
@@ -27,11 +28,11 @@ class IScanner
     virtual void stop() = 0;
 };
 
-template <typename ResultType, typename ErrorType>
+template <typename Protocol, typename ResultType, typename ErrorType>
 class IAsyncScanner
     : public IScanner<ResultType, ErrorType>
 {
-    std::shared_ptr<IAsyncSocket> m_asyncSocket;
+    std::shared_ptr<v2::SocketListener> m_asyncSocket;
     std::atomic_bool m_running = false;
 
     struct PingResolver : public util::Task
@@ -67,7 +68,7 @@ class IAsyncScanner
     std::weak_ptr<PingResolver> m_currentTask;
 
   public:
-    IAsyncScanner(std::shared_ptr<IAsyncSocket> asyncSocket)
+    IAsyncScanner(std::shared_ptr<v2::SocketListener> asyncSocket)
         : m_asyncSocket(std::move(asyncSocket))
     {
     }

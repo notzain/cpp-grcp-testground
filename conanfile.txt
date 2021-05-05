@@ -4,6 +4,7 @@ boost/1.75.0
 docopt.cpp/0.6.3
 doctest/2.4.4
 expected-lite/0.5.0
+magic_enum/0.7.2
 nlohmann_json/3.9.1
 span-lite/0.9.2
 spdlog/1.8.2
