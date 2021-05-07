@@ -5,77 +5,43 @@
 #include <mutex>
 #include <thread>
 
+#include "core/util/Thread.h"
 #include "core/util/logger/Logger.h"
 
 namespace util
 {
 
-class ThreadContext
+class TaskContext
 {
     using work_guard_type = boost::asio::executor_work_guard<boost::asio::io_context::executor_type>;
 
     boost::asio::io_context m_ioContext;
-    std::thread m_thread;
-
     std::unique_ptr<work_guard_type> m_keepAlive;
-    std::atomic_bool m_shutdown;
+
+    Thread m_thread;
 
   public:
-    using Ptr = std::shared_ptr<ThreadContext>;
-
-    enum StopToken
-    {
-        CancelRemainingWork,
-        FinishRemainingWork
-    };
+    using Ptr = std::shared_ptr<TaskContext>;
 
   public:
-    ~ThreadContext()
+    ~TaskContext()
     {
         stop();
-        CORE_INFO("Stopping ThreadContext");
     }
 
-    static ThreadContext::Ptr create()
+    static TaskContext::Ptr create()
     {
-        return std::shared_ptr<ThreadContext>(new ThreadContext);
-    }
-
-    void start()
-    {
-        m_thread = std::thread([this] {
-            m_shutdown.store(false);
-            m_keepAlive = std::make_unique<work_guard_type>(m_ioContext.get_executor());
-            m_ioContext.reset();
-            m_ioContext.run();
-        });
+        return TaskContext::Ptr(new TaskContext);
     }
 
     // Blocks till atleast current task is finished.
-    void stop(StopToken token = CancelRemainingWork)
+    void stop()
     {
-        switch (token)
-        {
-        case CancelRemainingWork: {
-            m_shutdown.store(true);
-            m_ioContext.stop();
-            break;
-        }
-        case FinishRemainingWork: {
-            m_keepAlive.reset();
-            break;
-        }
-        }
-
-        if (m_thread.joinable())
-            m_thread.join();
+        m_thread.requestStop();
     }
 
     const boost::asio::io_context& ioContext() const { return m_ioContext; }
     boost::asio::io_context& ioContext() { return m_ioContext; }
-
-    const std::thread& thread() const { return m_thread; }
-    std::thread& thread() { return m_thread; }
 
     template <typename Func>
     void post(Func&& f)
@@ -84,27 +50,28 @@ class ThreadContext
             // On Windows, calling ioContext.stop() keeps running handlers till the scheduler (randomly?)
             // decides to check the stop flag. On Unix, this is not an issue.
             // http://boost.2283326.n4.nabble.com/Asio-Does-stop-cancel-handlers-post-ed-to-io-service-td4648918.html
-            if (m_shutdown.load())
-                return;
             func();
         });
     }
 
   private:
-    ThreadContext()
+    TaskContext()
         : m_keepAlive(nullptr)
-        , m_shutdown(false)
+        , m_thread(Thread::spawn("TaskContext", [this] {
+            m_keepAlive = std::make_unique<work_guard_type>(m_ioContext.get_executor());
+            m_ioContext.run();
+        }))
     {
     }
 };
 
-class ThreadContextRegistry
+class TaskContextRegistry
 {
     inline static std::mutex m_registryMutex;
-    inline static std::map<std::string, ThreadContext::Ptr> m_registry;
+    inline static std::map<std::string, TaskContext::Ptr> m_registry;
 
   public:
-    static ThreadContext::Ptr registerThreadContext(const std::string& name)
+    static TaskContext::Ptr registerTaskContext(const std::string& name)
     {
         std::lock_guard g(m_registryMutex);
         if (m_registry.count(name))
@@ -115,13 +82,13 @@ class ThreadContextRegistry
         return createAndStart(name);
     }
 
-    static ThreadContext::Ptr getDefault()
+    static TaskContext::Ptr getDefault()
     {
         std::lock_guard g(m_registryMutex);
         return m_registry.at("default");
     }
 
-    static ThreadContext::Ptr getOrDefault(const std::string& name, const std::string& fallback = "default")
+    static TaskContext::Ptr getOrDefault(const std::string& name, const std::string& fallback = "default")
     {
         std::lock_guard g(m_registryMutex);
         if (m_registry.count(name))
@@ -139,16 +106,15 @@ class ThreadContextRegistry
     }
 
   private:
-    ThreadContextRegistry()
+    TaskContextRegistry()
     {
-        registerThreadContext("default");
+        registerTaskContext("default");
     };
 
-    static ThreadContext::Ptr createAndStart(const std::string& name)
+    static TaskContext::Ptr createAndStart(const std::string& name)
     {
-        auto threadContext = m_registry.insert({ name, ThreadContext::create() }).first->second;
-        threadContext->start();
-        return threadContext;
+        auto taskContext = m_registry.insert({ name, TaskContext::create() }).first->second;
+        return taskContext;
     }
 };
 } // namespace util

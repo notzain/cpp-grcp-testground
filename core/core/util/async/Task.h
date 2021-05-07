@@ -6,6 +6,8 @@
 #include <type_traits>
 #include <variant>
 
+#include "core/util/Thread.h"
+
 namespace util
 {
 struct Task
@@ -29,7 +31,7 @@ class TaskRunner
 {
     boost::asio::io_context m_ioContext;
     boost::asio::io_context::work m_keepAlive;
-    std::thread m_serviceThread;
+    Thread m_serviceThread;
     std::shared_ptr<std::atomic_bool> m_isAlive = std::make_shared<std::atomic_bool>(true);
 
   public:

@@ -10,7 +10,6 @@
 #include "IpAddress.h"
 #include "MacAddress.h"
 #include "core/net/scanner/IScanner.h"
-#include "core/net/socket/ICMPSocket.h"
 #include "core/net/socket/v2/IcmpSocket.h"
 #include "core/net/socket/v2/Protocols.h"
 #include "core/util/Result.h"
@@ -53,6 +52,8 @@ class ICMPScanner : public IAsyncScanner<v2::IcmpProtocol, ICMPResponse, IcmpErr
 
     util::Result<ICMPResponse, IcmpError> ping(std::string_view host) override;
     std::future<util::Result<ICMPResponse, IcmpError>> pingAsync(std::string_view host) override;
+
+    bool hasPendingRequests() const override;
 
   private:
     void onPacketReceived(std::uint8_t* bytes, std::size_t len) override;

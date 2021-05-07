@@ -6,9 +6,12 @@
 #include <core/services/device_discovery/DeviceDiscoveryService.h>
 #include <core/services/device_discovery/DeviceDiscoveryTaskBuilder.h>
 #include <core/services/device_discovery/IcmpDeviceDiscoveryTask.h>
+#include <core/util/Thread.h>
 #include <core/util/async/Resolver.h>
-#include <core/util/async/ThreadContext.h>
+#include <core/util/async/TaskContext.h>
 #include <core/util/logger/Logger.h>
+#include <core/util/Enum.h>
+#include <core/util/Result.h>
 #include <docopt/docopt.h>
 #include <iostream>
 #include <thread>

@@ -1,8 +1,8 @@
 #pragma once
 
-#include <fmt/format.h>
-#include <magic_enum.hpp>
 #include <nonstd/expected.hpp>
+
+#include "Enum.h"
 
 namespace util
 {
@@ -46,16 +46,7 @@ class Result : public nonstd::expected<T, Err>
 
 } // namespace util
 
-template <>
-struct fmt::formatter<util::Error::ErrorType> : formatter<string_view>
-{
-    // parse is inherited from formatter<string_view>.
-    template <typename FormatContext>
-    auto format(util::Error::ErrorType e, FormatContext& ctx)
-    {
-        return formatter<string_view>::format(magic_enum::enum_name(e), ctx);
-    }
-};
+REGISTER_ENUM(util::Error::ErrorType);
 
 using namespace util::Error;
 using util::Result;

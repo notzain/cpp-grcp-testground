@@ -1,20 +1,18 @@
-add_executable(app)
+add_executable(app main.cpp)
 
 target_include_directories(app PRIVATE ${CMAKE_CURRENT_BINARY_DIR}/generated)
 
-set(src_files main.cpp)
-
-target_sources(app PRIVATE ${src_files})
-
-target_link_libraries(app PRIVATE core CONAN_PKG::docopt.cpp
-                                  CONAN_PKG::backward-cpp)
+target_link_libraries(
+  app PRIVATE core CONAN_PKG::docopt.cpp CONAN_PKG::backward-cpp
+)
 
 if(NOT MSVC)
   add_custom_command(
     TARGET app
     POST_BUILD
     COMMAND sudo -kS setcap cap_net_raw+ep ${CMAKE_BINARY_DIR}/bin/app
-    COMMENT "Setting netcap capabilities on app")
+    COMMENT "Setting netcap capabilities on app"
+  )
 endif()
 
 find_program(iwyu_path NAMES include-what-you-use iwyu)

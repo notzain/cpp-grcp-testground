@@ -102,7 +102,7 @@ void ICMPScanner::handleTimeouts()
         auto& [host, req] = *it;
         if (now - req.time >= defaultTimeout)
         {
-            req.promise.set_value(Error(IcmpError{
+            req.promise.set_value(Error<IcmpError>({
                 pcpp::IPv4Address(host),
                 req.dstIp,
                 ErrorType::TimedOut }));
@@ -114,5 +114,9 @@ void ICMPScanner::handleTimeouts()
             it++;
         }
     }
+}
+bool ICMPScanner::hasPendingRequests() const
+{
+    return !m_pendingRequests.empty();
 }
 } // namespace net

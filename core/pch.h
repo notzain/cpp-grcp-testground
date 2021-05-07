@@ -25,6 +25,7 @@
 #include "core/traits/Printable.h"
 #include "core/traits/Serializable.h"
 #include "core/traits/serializer/JsonSerializer.h"
+#include "core/util/Enum.h"
 #include "core/util/Result.h"
 #include "core/util/Sequence.h"
 #include "core/util/logger/LogHelper.h"

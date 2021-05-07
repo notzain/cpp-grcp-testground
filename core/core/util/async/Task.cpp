@@ -12,9 +12,9 @@ namespace util
 
 TaskRunner::TaskRunner()
     : m_keepAlive(m_ioContext)
-    , m_serviceThread([this] {
+    , m_serviceThread(Thread::spawn("TaskRunner", [this] {
         m_ioContext.run();
-    })
+    }))
 {
 }
 
@@ -36,17 +36,13 @@ void TaskRunner::post(std::shared_ptr<Task> task)
 
 void TaskRunner::stop()
 {
-    if (m_serviceThread.joinable())
-    {
-        m_ioContext.stop();
-        m_serviceThread.join();
-    }
+    m_ioContext.stop();
 }
 
 void TaskRunner::postDelayed(std::shared_ptr<Task> task, const std::chrono::milliseconds& delay)
 {
     auto timer = std::make_shared<boost::asio::deadline_timer>(m_ioContext, boost::posix_time::milliseconds(delay.count()));
-    timer->async_wait([timer, this, isAlive = this->m_isAlive, task, delay](const boost::system::error_code& ) {
+    timer->async_wait([timer, this, isAlive = this->m_isAlive, task, delay](const boost::system::error_code&) {
         if (isAlive->load())
             post(task);
     });
