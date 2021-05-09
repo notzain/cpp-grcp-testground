@@ -24,5 +24,6 @@ class SocketPool
     void shutdown();
 
     std::shared_ptr<net::v2::IcmpSocket> createIcmpSocketv2() override;
+    std::shared_ptr<net::v2::RawSocket> createRawSocket(std::string_view interface) override;
 };
 } // namespace net

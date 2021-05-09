@@ -7,6 +7,7 @@ add_library(
   core/net/scanner/IScanner.cpp
   core/net/socket/SocketPool.cpp
   core/net/socket/v2/IcmpSocket.cpp
+  core/net/socket/v2/RawSocket.cpp
   core/services/ArpScanner.cpp
   core/services/device_discovery/DeviceDiscoveryService.cpp
   core/services/device_discovery/DeviceDiscoveryTask.cpp

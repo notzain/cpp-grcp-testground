@@ -12,6 +12,7 @@
 #include "core/net/scanner/IScanner.h"
 #include "core/net/socket/v2/IcmpSocket.h"
 #include "core/net/socket/v2/Protocols.h"
+#include "core/net/socket/v2/RawSocket.h"
 #include "core/util/Result.h"
 #include "core/util/type/WrapAround.h"
 
@@ -34,9 +35,10 @@ struct IcmpError
     ErrorType error;
 };
 
-class ICMPScanner : public IAsyncScanner<v2::IcmpProtocol, ICMPResponse, IcmpError>
+class ICMPScanner : public IAsyncScanner<v2::RawProtocol, ICMPResponse, IcmpError>
 {
-    v2::IcmpSocket::Ptr m_socket;
+    v2::RawSocket::Ptr m_socket;
+    // v2::RawSocket::Ptr m_rawSocket;
     util::WrapAround<std::uint8_t> m_sequenceNumber;
 
     struct Request
@@ -48,7 +50,7 @@ class ICMPScanner : public IAsyncScanner<v2::IcmpProtocol, ICMPResponse, IcmpErr
     std::map<std::string, Request> m_pendingRequests;
 
   public:
-    ICMPScanner(v2::IcmpSocket::Ptr socket);
+    ICMPScanner(v2::RawSocket::Ptr socket);
 
     util::Result<ICMPResponse, IcmpError> ping(std::string_view host) override;
     std::future<util::Result<ICMPResponse, IcmpError>> pingAsync(std::string_view host) override;

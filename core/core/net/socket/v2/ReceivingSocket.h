@@ -13,7 +13,8 @@
 
 namespace net::v2
 {
-using PacketByteContainer = boost::container::static_vector<std::uint8_t, 128>;
+constexpr inline std::size_t MaxBufferSize() { return 65536; };
+using PacketByteContainer = boost::container::static_vector<std::uint8_t, MaxBufferSize()>;
 
 class SocketListener
 {
@@ -30,6 +31,7 @@ class BoostSocketListener
     using Socket = typename Protocol::Socket;
     std::shared_ptr<Socket> m_socket;
 
+  protected:
     boost::asio::streambuf m_asioBuffer;
     boost::lockfree::spsc_queue<PacketByteContainer> m_packetBuffer;
 
@@ -51,17 +53,17 @@ class BoostSocketListener
     {
     }
 
-    void startReceive()
+    virtual void startReceive()
     {
         // Discard any data already in the buffer.
         m_asioBuffer.consume(m_asioBuffer.size());
 
         // Wait for a reply. We prepare the buffer to receive up to 64KB.
-        m_socket->async_receive(m_asioBuffer.prepare(65536),
+        m_socket->async_receive(m_asioBuffer.prepare(MaxBufferSize()),
                                 [self = this->shared_from_this()](const boost::system::error_code& ec, std::size_t length) { self->handleReceive(ec, length); });
     }
 
-    void handleReceive(const boost::system::error_code& ec, std::size_t length)
+    virtual void handleReceive(const boost::system::error_code& ec, std::size_t length)
     {
         if (ec)
         {
@@ -70,6 +72,7 @@ class BoostSocketListener
             return;
         }
 
+        CORE_INFO("Received {} bytes", length);
         m_asioBuffer.commit(length);
         std::istream is(&m_asioBuffer);
 

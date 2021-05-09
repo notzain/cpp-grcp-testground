@@ -3,13 +3,17 @@
 #include "IpAddress.h"
 #include "MacAddress.h"
 #include "core/net/scanner/IScanner.h"
+#include "core/net/socket/SocketPool.h"
 #include "core/net/socket/v2/IcmpSocket.h"
 #include "core/util/logger/Logger.h"
 
+#include <Packet.h>
+#include <RawPacket.h>
 #include <chrono>
 #include <cstdint>
 #include <fmt/chrono.h>
 #include <fmt/format.h>
+#include <spdlog/fmt/bin_to_hex.h>
 #include <stdexcept>
 #include <thread>
 #include <utility>
@@ -21,7 +25,7 @@
 
 namespace net
 {
-ICMPScanner::ICMPScanner(v2::IcmpSocket::Ptr socket)
+ICMPScanner::ICMPScanner(v2::RawSocket::Ptr socket)
     : IAsyncScanner(socket)
     , m_socket(socket)
 {
@@ -44,15 +48,24 @@ util::Result<ICMPResponse, IcmpError> ICMPScanner::ping(std::string_view host)
 
 std::future<util::Result<ICMPResponse, IcmpError>> net::ICMPScanner::pingAsync(std::string_view host)
 {
+    pcpp::Packet packet;
+    pcpp::EthLayer ethLayer("08:00:27:21:f8:3c", "ff:ff:ff:ff:ff:ff");
+    pcpp::IPv4Layer ipLayer(pcpp::IPv4Address("192.168.178.165"), pcpp::IPv4Address("192.168.178.1"));
+    ipLayer.getIPv4Header()->ipId = htons(2000);
+    ipLayer.getIPv4Header()->timeToLive = 64;
     pcpp::IcmpLayer icmpLayer;
     icmpLayer.setEchoRequestData(std::hash<std::thread::id>()(std::this_thread::get_id()),
-                                 *m_sequenceNumber++,
+                                 0,
                                  0,
                                  (const std::uint8_t*)"WHAT",
                                  5);
-    icmpLayer.computeCalculateFields();
 
-    if (auto bytesSent = m_socket->sendTo({ host.data(), 7 }, { icmpLayer.getData(), icmpLayer.getDataLen() }))
+    packet.addLayer(&ethLayer);
+    packet.addLayer(&ipLayer);
+    packet.addLayer(&icmpLayer);
+    packet.computeCalculateFields();
+
+    if (auto bytesSent = m_socket->sendTo({ "enp0s3" }, { (uint8_t*)packet.getRawPacket()->getRawData(), (size_t)packet.getRawPacket()->getRawDataLen() }))
     {
         CORE_INFO("Sent {} bytes to {}", *bytesSent, host);
     }
@@ -102,10 +115,9 @@ void ICMPScanner::handleTimeouts()
         auto& [host, req] = *it;
         if (now - req.time >= defaultTimeout)
         {
-            req.promise.set_value(Error<IcmpError>({
-                pcpp::IPv4Address(host),
-                req.dstIp,
-                ErrorType::TimedOut }));
+            req.promise.set_value(Error<IcmpError>({ pcpp::IPv4Address(host),
+                                                     req.dstIp,
+                                                     ErrorType::TimedOut }));
 
             it = m_pendingRequests.erase(it);
         }

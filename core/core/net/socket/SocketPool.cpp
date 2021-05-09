@@ -40,4 +40,17 @@ std::shared_ptr<net::v2::IcmpSocket> SocketPool::createIcmpSocketv2()
     return v2::IcmpSocket::create(std::make_shared<v2::IcmpProtocol::Socket>(m_ioService));
 }
 
+std::shared_ptr<v2::RawSocket> SocketPool::createRawSocket(std::string_view interface)
+{
+    try
+    {
+        return v2::RawSocket::create(interface, std::make_shared<v2::RawProtocol::Socket>(m_ioService));
+    }
+    catch (std::exception& e)
+    {
+        CORE_WARN(e.what());
+        return nullptr;
+    }
+}
+
 } // namespace net
