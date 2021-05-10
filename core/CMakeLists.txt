@@ -4,13 +4,14 @@ add_library(
   core/net/IPv4Range.cpp
   core/net/NetworkInterface.cpp
   core/net/packet/layer/EthLayerBuilder.cpp
-  core/net/packet/layer/IPv4LayerBuilder.cpp
   core/net/packet/layer/IcmpLayerBuilder.cpp
+  core/net/packet/layer/IPv4LayerBuilder.cpp
   core/net/scanner/ICMPScanner.cpp
   core/net/scanner/IScanner.cpp
   core/net/socket/SocketPool.cpp
   core/net/socket/v2/IcmpSocket.cpp
   core/net/socket/v2/RawSocket.cpp
+  core/net/socket/v2/ReceivingSocket.cpp
   core/services/ArpScanner.cpp
   core/services/device_discovery/DeviceDiscoveryService.cpp
   core/services/device_discovery/DeviceDiscoveryTask.cpp
@@ -37,12 +38,12 @@ target_link_libraries(
          proto
 )
 
-find_program(iwyu_path NAMES include-what-you-use iwyu)
-if(iwyu_path)
-  set_property(TARGET core PROPERTY CXX_INCLUDE_WHAT_YOU_USE ${iwyu_path})
-else()
-  message("Could not find the program include-what-you-use")
-endif()
+# find_program(iwyu_path NAMES include-what-you-use iwyu)
+# if(iwyu_path)
+#   set_property(TARGET core PROPERTY CXX_INCLUDE_WHAT_YOU_USE ${iwyu_path})
+# else()
+#   message("Could not find the program include-what-you-use")
+# endif()
 
 target_precompile_headers(core PRIVATE pch.h)
 # set_target_properties(core PROPERTIES UNITY_BUILD ON)

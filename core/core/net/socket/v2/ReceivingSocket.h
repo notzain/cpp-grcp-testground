@@ -1,7 +1,5 @@
 #pragma once
 
-#include "core/util/logger/Logger.h"
-
 #include <boost/asio.hpp>
 #include <boost/container/static_vector.hpp>
 #include <boost/lockfree/spsc_queue.hpp>
@@ -23,37 +21,36 @@ class SocketListener
     virtual std::optional<PacketByteContainer> nextReceivedPacket() = 0;
 };
 
+class BoostSocketListenerBase : public SocketListener
+{
+  protected:
+    boost::asio::streambuf m_asioBuffer;
+    boost::lockfree::spsc_queue<PacketByteContainer> m_packetBuffer;
+
+  public:
+    BoostSocketListenerBase();
+    std::optional<PacketByteContainer> nextReceivedPacket() override;
+
+  protected:
+    virtual void startReceive() = 0;
+    virtual void handleReceive(const boost::system::error_code& ec, std::size_t length);
+};
+
 template <typename Protocol>
 class BoostSocketListener
-    : public SocketListener
+    : public BoostSocketListenerBase
     , public std::enable_shared_from_this<BoostSocketListener<Protocol>>
 {
     using Socket = typename Protocol::Socket;
     std::shared_ptr<Socket> m_socket;
 
   protected:
-    boost::asio::streambuf m_asioBuffer;
-    boost::lockfree::spsc_queue<PacketByteContainer> m_packetBuffer;
-
-  public:
-    std::optional<PacketByteContainer> nextReceivedPacket() override
-    {
-        PacketByteContainer data;
-        if (m_packetBuffer.pop(data))
-        {
-            return data;
-        }
-        return std::nullopt;
-    }
-
-  protected:
     BoostSocketListener(std::shared_ptr<Socket> socket)
         : m_socket(std::move(socket))
-        , m_packetBuffer(1024)
     {
     }
 
-    virtual void startReceive()
+    void startReceive() override
     {
         // Discard any data already in the buffer.
         m_asioBuffer.consume(m_asioBuffer.size());
@@ -61,27 +58,6 @@ class BoostSocketListener
         // Wait for a reply. We prepare the buffer to receive up to 64KB.
         m_socket->async_receive(m_asioBuffer.prepare(MaxBufferSize()),
                                 [self = this->shared_from_this()](const boost::system::error_code& ec, std::size_t length) { self->handleReceive(ec, length); });
-    }
-
-    virtual void handleReceive(const boost::system::error_code& ec, std::size_t length)
-    {
-        if (ec)
-        {
-            CORE_WARN(ec.message());
-            startReceive();
-            return;
-        }
-
-        CORE_INFO("Received {} bytes", length);
-        m_asioBuffer.commit(length);
-        std::istream is(&m_asioBuffer);
-
-        PacketByteContainer data(length);
-        is.read(reinterpret_cast<char*>(data.data()), length);
-
-        m_packetBuffer.push(data);
-
-        startReceive();
     }
 };
 } // namespace net::v2
