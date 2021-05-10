@@ -3,6 +3,9 @@ add_library(
   core/models/net/Device.cpp
   core/net/IPv4Range.cpp
   core/net/NetworkInterface.cpp
+  core/net/packet/layer/EthLayerBuilder.cpp
+  core/net/packet/layer/IPv4LayerBuilder.cpp
+  core/net/packet/layer/IcmpLayerBuilder.cpp
   core/net/scanner/ICMPScanner.cpp
   core/net/scanner/IScanner.cpp
   core/net/socket/SocketPool.cpp

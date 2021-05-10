@@ -28,7 +28,7 @@ class RawSocket
     bool isConnected() const override { return true; }
     bool disconnect() override { return true; }
 
-    Result<std::size_t> send(nonstd::span<std::uint8_t> payload) override { return Error(ErrorType::Unimplemented); }
+    Result<std::size_t> send(nonstd::span<std::uint8_t> payload) override;
     Result<std::size_t> sendTo(const RawProtocol::Endpoint& endpoint, nonstd::span<std::uint8_t> payload) override;
 
   private:

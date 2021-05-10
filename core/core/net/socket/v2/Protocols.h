@@ -7,6 +7,7 @@
 #include <boost/asio/ip/icmp.hpp>
 #include <linux/if_ether.h>
 #include <net/if.h>
+#include <netinet/in.h>
 #include <string>
 #include <sys/socket.h>
 
@@ -43,15 +44,8 @@ struct RawProtocol
 
     struct Endpoint : public traits::Printable<Endpoint>
     {
-        // std::string ipAddress;
-        // int port;
         std::string interface;
 
-        // Endpoint(std::string ip, int port)
-        //     : ipAddress(std::move(ip))
-        //     , port(port)
-        // {
-        // }
         Endpoint(std::string iface)
             : interface(std::move(iface))
         {
@@ -62,17 +56,24 @@ struct RawProtocol
             return fmt::format("['{}']", interface);
         }
     };
-    struct SockAddr
+    struct SockAddr : public traits::Printable<SockAddr>
     {
         sockaddr_ll sockAddr;
+        std::string interface;
 
-        SockAddr(std::string_view interface)
+        SockAddr(std::string iface)
+            : interface(std::move(iface))
         {
             memset(&sockAddr, 0, sizeof(sockAddr));
             sockAddr.sll_family = PF_PACKET;
-            sockAddr.sll_protocol = htons(ETH_P_ALL);
+            sockAddr.sll_protocol = htons(IPPROTO_ICMP);
             sockAddr.sll_ifindex = if_nametoindex(interface.data());
             sockAddr.sll_hatype = 1;
+        }
+
+        std::string format() const override
+        {
+            return fmt::format("['{}']", interface);
         }
     };
 };

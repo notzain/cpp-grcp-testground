@@ -2,6 +2,10 @@
 
 #include "IpAddress.h"
 #include "MacAddress.h"
+#include "core/net/packet/PacketBuilder.h"
+#include "core/net/packet/layer/EthLayerBuilder.h"
+#include "core/net/packet/layer/IPv4LayerBuilder.h"
+#include "core/net/packet/layer/IcmpLayerBuilder.h"
 #include "core/net/scanner/IScanner.h"
 #include "core/net/socket/SocketPool.h"
 #include "core/net/socket/v2/IcmpSocket.h"
@@ -48,24 +52,23 @@ util::Result<ICMPResponse, IcmpError> ICMPScanner::ping(std::string_view host)
 
 std::future<util::Result<ICMPResponse, IcmpError>> net::ICMPScanner::pingAsync(std::string_view host)
 {
-    pcpp::Packet packet;
-    pcpp::EthLayer ethLayer("08:00:27:21:f8:3c", "ff:ff:ff:ff:ff:ff");
-    pcpp::IPv4Layer ipLayer(pcpp::IPv4Address("192.168.178.165"), pcpp::IPv4Address("192.168.178.1"));
-    ipLayer.getIPv4Header()->ipId = htons(2000);
-    ipLayer.getIPv4Header()->timeToLive = 64;
-    pcpp::IcmpLayer icmpLayer;
-    icmpLayer.setEchoRequestData(std::hash<std::thread::id>()(std::this_thread::get_id()),
-                                 0,
-                                 0,
-                                 (const std::uint8_t*)"WHAT",
-                                 5);
+    PacketBuilder packetBuilder;
+    packetBuilder
+        .addLayer(EthLayerBuilder::create()
+                      .withSrcMac("08:00:27:21:f8:3c")
+                      .withDstMac("ff:ff:ff:ff:ff:ff"))
+        .addLayer(IPv4LayerBuilder::create()
+                      .withSrcIp("192.168.178.165")
+                      .withDstIp("192.168.178.1")
+                      .withId(htons(2000))
+                      .withTimeToLive(64))
+        .addLayer(IcmpLayerBuilder::create()
+                      .withId(std::hash<std::thread::id>()(std::this_thread::get_id()))
+                      .withSequence(0)
+                      .withTimestamp()
+                      .withPayload("WHAT"));
 
-    packet.addLayer(&ethLayer);
-    packet.addLayer(&ipLayer);
-    packet.addLayer(&icmpLayer);
-    packet.computeCalculateFields();
-
-    if (auto bytesSent = m_socket->sendTo({ "enp0s3" }, { (uint8_t*)packet.getRawPacket()->getRawData(), (size_t)packet.getRawPacket()->getRawDataLen() }))
+    if (auto bytesSent = m_socket->sendTo({ "enp0s3" }, packetBuilder.getData()))
     {
         CORE_INFO("Sent {} bytes to {}", *bytesSent, host);
     }
