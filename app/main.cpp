@@ -45,7 +45,7 @@ int main(int argc, const char** argv)
     net::DeviceDiscoveryService dds;
     dds.addDiscoveryTask(
         net::DeviceDiscoveryTaskBuilder()
-            .construct<net::IcmpDeviceDiscoveryTask>(net::SocketPool::defaultPool().createRawSocket("enp0s3"))
+            .construct<net::IcmpDeviceDiscoveryTask>(net::SocketPool::defaultPool().createIcmpSocketv2())
             .withSuccessCallback([](const auto& result) {
                 const auto timepoint = std::chrono::system_clock::to_time_t(result.completedAt);
                 CORE_INFO("'{}' -> '{}' in {} arrived on {:%c}",

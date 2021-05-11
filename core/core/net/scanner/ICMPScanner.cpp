@@ -29,7 +29,7 @@
 
 namespace net
 {
-ICMPScanner::ICMPScanner(v2::RawSocket::Ptr socket)
+ICMPScanner::ICMPScanner(v2::IcmpSocket::Ptr socket)
     : IAsyncScanner(socket)
     , m_socket(socket)
 {
@@ -54,21 +54,21 @@ std::future<util::Result<ICMPResponse, IcmpError>> net::ICMPScanner::pingAsync(s
 {
     PacketBuilder packetBuilder;
     packetBuilder
-        .addLayer(EthLayerBuilder::create()
-                      .withSrcMac("08:00:27:21:f8:3c")
-                      .withDstMac("ff:ff:ff:ff:ff:ff"))
-        .addLayer(IPv4LayerBuilder::create()
-                      .withSrcIp("192.168.178.165")
-                      .withDstIp("192.168.178.1")
-                      .withId(htons(2000))
-                      .withTimeToLive(64))
+        // .addLayer(EthLayerBuilder::create()
+        //               .withSrcMac("08:00:27:21:f8:3c")
+        //               .withDstMac("ff:ff:ff:ff:ff:ff"))
+        // .addLayer(IPv4LayerBuilder::create()
+        //               .withSrcIp("192.168.178.165")
+        //               .withDstIp("192.168.178.1")
+        //               .withId(htons(2000))
+        //               .withTimeToLive(64))
         .addLayer(IcmpLayerBuilder::create()
                       .withId(std::hash<std::thread::id>()(std::this_thread::get_id()))
                       .withSequence(0)
                       .withTimestamp()
                       .withPayload("WHAT"));
 
-    if (auto bytesSent = m_socket->sendTo({ "enp0s3" }, packetBuilder.getData()))
+    if (auto bytesSent = m_socket->sendTo({ host.data(), 0 }, packetBuilder.getData()))
     {
         CORE_INFO("Sent {} bytes to {}", *bytesSent, host);
     }
