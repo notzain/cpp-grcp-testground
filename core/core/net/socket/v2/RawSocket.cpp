@@ -1,9 +1,10 @@
 #include "RawSocket.h"
-#include "core/net/socket/v2/Protocols.h"
 
-#include <boost/asio/ip/address_v4.hpp>
-#include <linux/if_ether.h>
-#include <sys/socket.h>
+#include "core/net/socket/filter/PacketFilter.h"
+#include "core/net/socket/v2/Protocols.h"
+#include "core/util/logger/Logger.h"
+
+#include <boost/asio/generic/raw_protocol.hpp>
 
 namespace net::v2
 {
@@ -47,6 +48,16 @@ Result<std::size_t> RawSocket::sendTo(const RawProtocol::Endpoint& endpoint, non
                   e.what());
         return Error(ErrorType::InvalidArgument);
     }
+}
+
+bool RawSocket::attachFilter(net::PacketFilter& filter)
+{
+    return filter.attach(m_socket->native_handle());
+}
+
+bool RawSocket::detachFilter(net::PacketFilter& filter)
+{
+    return filter.detach(m_socket->native_handle());
 }
 
 } // namespace net::v2

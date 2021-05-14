@@ -11,7 +11,6 @@ BoostSocketListenerBase::BoostSocketListenerBase()
 
 std::optional<PacketByteContainer> BoostSocketListenerBase::nextReceivedPacket()
 {
-    CORE_INFO("{:p}", (void*)&m_packetBuffer);
     PacketByteContainer data;
     if (m_packetBuffer.pop(data))
         return data;
@@ -27,7 +26,7 @@ void BoostSocketListenerBase::handleReceive(const boost::system::error_code& ec,
         return;
     }
 
-    CORE_INFO("{:p}", (void*)&m_packetBuffer);
+    CORE_INFO("Received {} bytes", length);
     m_asioBuffer.commit(length);
     std::istream is(&m_asioBuffer);
 

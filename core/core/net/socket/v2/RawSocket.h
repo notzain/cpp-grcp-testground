@@ -4,6 +4,11 @@
 #include "ReceivingSocket.h"
 #include "Socket.h"
 
+namespace net
+{
+class PacketFilter;
+}
+
 namespace net::v2
 {
 class RawSocket
@@ -30,6 +35,9 @@ class RawSocket
 
     Result<std::size_t> send(nonstd::span<std::uint8_t> payload) override;
     Result<std::size_t> sendTo(const RawProtocol::Endpoint& endpoint, nonstd::span<std::uint8_t> payload) override;
+
+    bool attachFilter(net::PacketFilter& filter);
+    bool detachFilter(net::PacketFilter& filter);
 
   private:
     RawSocket(std::string_view interface, std::shared_ptr<RawProtocol::Socket> socket);

@@ -9,8 +9,6 @@
 
 namespace net
 {
-class Layer;
-
 class PacketBuilder
 {
     pcpp::Packet m_packet;

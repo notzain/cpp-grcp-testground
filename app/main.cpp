@@ -6,14 +6,21 @@
 #include <core/services/device_discovery/DeviceDiscoveryService.h>
 #include <core/services/device_discovery/DeviceDiscoveryTaskBuilder.h>
 #include <core/services/device_discovery/IcmpDeviceDiscoveryTask.h>
+#include <core/util/Enum.h>
+#include <core/util/Result.h>
 #include <core/util/Thread.h>
 #include <core/util/async/Resolver.h>
 #include <core/util/async/TaskContext.h>
 #include <core/util/logger/Logger.h>
-#include <core/util/Enum.h>
-#include <core/util/Result.h>
 #include <docopt/docopt.h>
 #include <iostream>
+#include <linux/if_ether.h>
+#include <net/ethernet.h>
+#include <net/if.h>
+#include <netinet/in.h>
+#include <netpacket/packet.h>
+#include <string>
+#include <sys/socket.h>
 #include <thread>
 
 const auto usage = R"(GRPC Application.
@@ -40,12 +47,10 @@ int main(int argc, const char** argv)
         CORE_INFO("{} - {}", key, value);
     }
 
-    auto socket = net::SocketPool::defaultPool().createIcmpSocketv2();
-
     net::DeviceDiscoveryService dds;
     dds.addDiscoveryTask(
         net::DeviceDiscoveryTaskBuilder()
-            .construct<net::IcmpDeviceDiscoveryTask>(net::SocketPool::defaultPool().createIcmpSocketv2())
+            .construct<net::IcmpDeviceDiscoveryTask>(net::SocketPool::defaultPool().createRawSocket("enp0s3"))
             .withSuccessCallback([](const auto& result) {
                 const auto timepoint = std::chrono::system_clock::to_time_t(result.completedAt);
                 CORE_INFO("'{}' -> '{}' in {} arrived on {:%c}",
@@ -285,6 +290,93 @@ int main()
     }
 
     std::cout << error << std::endl;
+    return 0;
+}
+*/
+
+/*
+#include <arpa/inet.h>
+#include <array>
+#include <boost/asio/generic/raw_protocol.hpp>
+#include <cstring>
+#include <iostream>
+#include <linux/filter.h>
+#include <linux/if_ether.h>
+#include <netdb.h>
+#include <netinet/if_ether.h>
+#include <netinet/in.h>
+#include <stdio.h>
+#include <sys/socket.h>
+#include <sys/types.h>
+#include <unistd.h>
+
+int _get_MAC(void)
+{
+    int sock, sockfd, n, cnt;
+    char buffer[2048];
+    unsigned char *iphead, *ethhead;
+    struct ether_addr ether;
+
+    if ((sock = socket(PF_PACKET, SOCK_RAW, htons(ETH_P_IP))) < 0)
+    {
+        perror("socket");
+        exit(1);
+    }
+
+    while (1)
+    {
+        if (n = recvfrom(sock, buffer, 2048, 0, NULL, NULL) == -1)
+        {
+            perror("recvfrom");
+            close(sock);
+            exit(1);
+        }
+
+        ethhead = (unsigned char*)buffer;
+
+        if (ethhead != NULL)
+        {
+            iphead = (unsigned char*)(buffer + 14); // Skip Ethernet header
+            printf("Protocolo   (UDP=11): %02x Hex\n", iphead[9]);
+            printf("\n--------------------------------------"
+                   "\nMAC destino (server): "
+                   "%02x:%02x:%02x:%02x:%02x:%02x\n",
+                   ethhead[0],
+                   ethhead[1],
+                   ethhead[2],
+                   ethhead[3],
+                   ethhead[4],
+                   ethhead[5]);
+            printf("MAC origen  (CAL30x): "
+                   "%02x:%02x:%02x:%02x:%02x:%02x\n",
+                   ethhead[6],
+                   ethhead[7],
+                   ethhead[8],
+                   ethhead[9],
+                   ethhead[10],
+                   ethhead[11]);
+
+            if (*iphead == 0x45)
+            { // Double check for IPv4 and no options present
+                printf("IP destino  (server): %d.%d.%d.%d\n",
+                       iphead[12],
+                       iphead[13],
+                       iphead[14],
+                       iphead[15]);
+                printf("IP origen   (CAL30x): %d.%d.%d.%d\n",
+                       iphead[16],
+                       iphead[17],
+                       iphead[18],
+                       iphead[19]);
+            }
+        }
+    }
+    return 0;
+}
+
+int main(int argc, char** argv)
+{
+    _get_MAC();
     return 0;
 }
 */

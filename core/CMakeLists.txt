@@ -9,6 +9,8 @@ add_library(
   core/net/scanner/ICMPScanner.cpp
   core/net/scanner/IScanner.cpp
   core/net/socket/SocketPool.cpp
+  core/net/socket/filter/PacketFilter.cpp
+  core/net/socket/filter/IcmpFilter.cpp
   core/net/socket/v2/IcmpSocket.cpp
   core/net/socket/v2/RawSocket.cpp
   core/net/socket/v2/ReceivingSocket.cpp

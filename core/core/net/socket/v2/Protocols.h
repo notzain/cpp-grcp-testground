@@ -66,7 +66,7 @@ struct RawProtocol
         {
             memset(&sockAddr, 0, sizeof(sockAddr));
             sockAddr.sll_family = PF_PACKET;
-            sockAddr.sll_protocol = htons(IPPROTO_ICMP);
+            sockAddr.sll_protocol = htons(ETH_P_IP);
             sockAddr.sll_ifindex = if_nametoindex(interface.data());
             sockAddr.sll_hatype = 1;
         }

@@ -1,8 +1,8 @@
 #include "ICMPScanner.h"
 
-#include "IpAddress.h"
-#include "MacAddress.h"
 #include "core/net/packet/PacketBuilder.h"
+#include "core/net/packet/PacketParser.h"
+#include "core/net/socket/filter/IcmpFilter.h"
 #include "core/net/packet/layer/EthLayerBuilder.h"
 #include "core/net/packet/layer/IPv4LayerBuilder.h"
 #include "core/net/packet/layer/IcmpLayerBuilder.h"
@@ -11,6 +11,8 @@
 #include "core/net/socket/v2/IcmpSocket.h"
 #include "core/util/logger/Logger.h"
 
+#include <IpAddress.h>
+#include <MacAddress.h>
 #include <Packet.h>
 #include <RawPacket.h>
 #include <chrono>
@@ -21,7 +23,6 @@
 #include <stdexcept>
 #include <thread>
 #include <utility>
-
 #include <EthLayer.h>
 #include <IPv4Layer.h>
 #include <IcmpLayer.h>
@@ -29,10 +30,11 @@
 
 namespace net
 {
-ICMPScanner::ICMPScanner(v2::IcmpSocket::Ptr socket)
+ICMPScanner::ICMPScanner(v2::RawSocket::Ptr socket)
     : IAsyncScanner(socket)
     , m_socket(socket)
 {
+    m_socket->attachFilter(PacketFilter::get<IcmpFilter>());
 }
 
 util::Result<ICMPResponse, IcmpError> ICMPScanner::ping(std::string_view host)
@@ -54,21 +56,21 @@ std::future<util::Result<ICMPResponse, IcmpError>> net::ICMPScanner::pingAsync(s
 {
     PacketBuilder packetBuilder;
     packetBuilder
-        // .addLayer(EthLayerBuilder::create()
-        //               .withSrcMac("08:00:27:21:f8:3c")
-        //               .withDstMac("ff:ff:ff:ff:ff:ff"))
-        // .addLayer(IPv4LayerBuilder::create()
-        //               .withSrcIp("192.168.178.165")
-        //               .withDstIp("192.168.178.1")
-        //               .withId(htons(2000))
-        //               .withTimeToLive(64))
+        .addLayer(EthLayerBuilder::create()
+                      .withSrcMac("08:00:27:21:f8:3c")
+                      .withDstMac("ff:ff:ff:ff:ff:ff"))
+        .addLayer(IPv4LayerBuilder::create()
+                      .withSrcIp("192.168.178.165")
+                      .withDstIp("192.168.178.1")
+                      .withId(htons(2000))
+                      .withTimeToLive(64))
         .addLayer(IcmpLayerBuilder::create()
                       .withId(std::hash<std::thread::id>()(std::this_thread::get_id()))
                       .withSequence(0)
                       .withTimestamp()
                       .withPayload("WHAT"));
 
-    if (auto bytesSent = m_socket->sendTo({ host.data(), 0 }, packetBuilder.getData()))
+    if (auto bytesSent = m_socket->sendTo({ "enp0s3" }, packetBuilder.getData()))
     {
         CORE_INFO("Sent {} bytes to {}", *bytesSent, host);
     }
@@ -83,7 +85,9 @@ std::future<util::Result<ICMPResponse, IcmpError>> net::ICMPScanner::pingAsync(s
 
 void ICMPScanner::onPacketReceived(std::uint8_t* bytes, std::size_t len)
 {
-    const auto now = std::chrono::system_clock::now();
+    // PacketParser parser({bytes, len});
+    // auto* ethLayer = parser.getPacket().getLayerOfType<pcpp::EthLayer>();
+    // ethLayer->
 
     const auto* ipHeader = reinterpret_cast<const pcpp::iphdr*>(bytes);
     pcpp::icmp_echo_reply icmpReply{};
@@ -101,7 +105,7 @@ void ICMPScanner::onPacketReceived(std::uint8_t* bytes, std::size_t len)
         auto& request = m_pendingRequests[response.srcIp.toString()];
 
         response.responseTime = std::chrono::duration_cast<std::chrono::milliseconds>(
-            now - request.time);
+            std::chrono::system_clock::now() - request.time);
 
         request.promise.set_value(std::move(response));
 
