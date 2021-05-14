@@ -8,15 +8,13 @@ namespace net
 {
 bool PacketFilter::attach(int socketFd)
 {
-    auto* bpf = getPacketFilter();
-    assert(bpf);
-    return setsockopt(socketFd, SOL_SOCKET, SO_ATTACH_FILTER, bpf, sizeof(*bpf)) > 0;
+    assert(m_packetFilter);
+    return setsockopt(socketFd, SOL_SOCKET, SO_ATTACH_FILTER, m_packetFilter, sizeof(*m_packetFilter)) > 0;
 }
 
 bool PacketFilter::detach(int socketFd)
 {
-    auto* bpf = getPacketFilter();
-    assert(bpf);
-    return setsockopt(socketFd, SOL_SOCKET, SO_DETACH_FILTER, bpf, sizeof(*bpf)) > 0;
+    assert(m_packetFilter);
+    return setsockopt(socketFd, SOL_SOCKET, SO_DETACH_FILTER, m_packetFilter, sizeof(*m_packetFilter)) > 0;
 }
 } // namespace net

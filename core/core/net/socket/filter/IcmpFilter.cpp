@@ -21,8 +21,9 @@ sock_fprog bpf = {
 };
 } // namespace
 
-sock_fprog* IcmpFilter::getPacketFilter() const
+PacketFilter& IcmpFilter()
 {
-    return &bpf;
+    static PacketFilter filter(&bpf);
+    return filter;
 }
 } // namespace net

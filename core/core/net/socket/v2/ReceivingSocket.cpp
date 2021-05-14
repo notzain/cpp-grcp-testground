@@ -1,17 +1,18 @@
 #include "ReceivingSocket.h"
 
 #include "core/util/logger/Logger.h"
+#include <spdlog/fmt/bin_to_hex.h>
 
 namespace net::v2
 {
 BoostSocketListenerBase::BoostSocketListenerBase()
-    : m_packetBuffer(1024)
+    : m_packetBuffer(MaxBufferSize())
 {
 }
 
-std::optional<PacketByteContainer> BoostSocketListenerBase::nextReceivedPacket()
+std::optional<ReceivedPacket> BoostSocketListenerBase::nextReceivedPacket()
 {
-    PacketByteContainer data;
+    ReceivedPacket data;
     if (m_packetBuffer.pop(data))
         return data;
     return std::nullopt;
@@ -26,13 +27,13 @@ void BoostSocketListenerBase::handleReceive(const boost::system::error_code& ec,
         return;
     }
 
-    CORE_INFO("Received {} bytes", length);
+    ReceivedPacket packet(length);
+
     m_asioBuffer.commit(length);
     std::istream is(&m_asioBuffer);
 
-    PacketByteContainer data(length);
-    is.read(reinterpret_cast<char*>(data.data()), length);
-    m_packetBuffer.push(data);
+    is.read(reinterpret_cast<char*>(packet.bytes.data()), length);
+    m_packetBuffer.push(packet);
 
     startReceive();
 }

@@ -51,9 +51,9 @@ class IAsyncScanner
             }
             if (scanner->hasPendingRequests())
             {
-                if (auto bytesRead = scanner->m_asyncSocket->nextReceivedPacket())
+                if (auto packet = scanner->m_asyncSocket->nextReceivedPacket())
                 {
-                    scanner->onPacketReceived(bytesRead->data(), bytesRead->size());
+                    scanner->onPacketReceived(*packet);
                     return util::Task::RunAgain{};
                 }
                 scanner->handleTimeouts();
@@ -101,7 +101,7 @@ class IAsyncScanner
     [[nodiscard]] virtual bool hasPendingRequests() const = 0;
 
   private:
-    virtual void onPacketReceived(std::uint8_t* bytes, std::size_t len) = 0;
+    virtual void onPacketReceived(const v2::ReceivedPacket& packet) = 0;
     virtual void handleTimeouts() = 0;
 };
 } // namespace net

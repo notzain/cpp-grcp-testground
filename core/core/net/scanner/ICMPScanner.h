@@ -45,7 +45,7 @@ class ICMPScanner : public IAsyncScanner<v2::IcmpProtocol, ICMPResponse, IcmpErr
     {
         std::string dstIp;
         std::promise<util::Result<ICMPResponse, IcmpError>> promise;
-        std::chrono::time_point<std::chrono::system_clock> time;
+        TimePoint time;
     };
     std::map<std::string, Request> m_pendingRequests;
 
@@ -58,7 +58,7 @@ class ICMPScanner : public IAsyncScanner<v2::IcmpProtocol, ICMPResponse, IcmpErr
     bool hasPendingRequests() const override;
 
   private:
-    void onPacketReceived(std::uint8_t* bytes, std::size_t len) override;
+    void onPacketReceived(const v2::ReceivedPacket& packet) override;
     void handleTimeouts() override;
 };
 } // namespace net

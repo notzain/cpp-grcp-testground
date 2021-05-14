@@ -1,9 +1,10 @@
 #pragma once
 
+#include "core/util/Time.h"
+
 #include <boost/asio.hpp>
 #include <boost/container/static_vector.hpp>
 #include <boost/lockfree/spsc_queue.hpp>
-#include <chrono>
 #include <future>
 #include <memory>
 #include <nonstd/span.hpp>
@@ -11,25 +12,36 @@
 
 namespace net::v2
 {
-constexpr inline std::size_t MaxBufferSize() { return 65536; };
-using PacketByteContainer = boost::container::static_vector<std::uint8_t, MaxBufferSize()>;
+constexpr inline std::size_t MaxBufferSize() { return 1024; };
+struct ReceivedPacket
+{
+    TimePoint arrival;
+    boost::container::static_vector<std::uint8_t, MaxBufferSize()> bytes;
+
+    ReceivedPacket() = default;
+    ReceivedPacket(std::size_t length)
+        : arrival(std::chrono::system_clock::now())
+        , bytes(length)
+    {
+    }
+};
 
 class SocketListener
 {
   public:
     virtual ~SocketListener() = default;
-    virtual std::optional<PacketByteContainer> nextReceivedPacket() = 0;
+    virtual std::optional<ReceivedPacket> nextReceivedPacket() = 0;
 };
 
 class BoostSocketListenerBase : public SocketListener
 {
   protected:
     boost::asio::streambuf m_asioBuffer;
-    boost::lockfree::spsc_queue<PacketByteContainer> m_packetBuffer;
+    boost::lockfree::spsc_queue<ReceivedPacket> m_packetBuffer;
 
   public:
     BoostSocketListenerBase();
-    std::optional<PacketByteContainer> nextReceivedPacket() override;
+    std::optional<ReceivedPacket> nextReceivedPacket() override;
 
   protected:
     virtual void startReceive() = 0;

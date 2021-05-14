@@ -4,12 +4,5 @@
 
 namespace net
 {
-class IcmpFilter : public PacketFilter
-{
-  public:
-    IcmpFilter() = default;
-
-  private:
-    sock_fprog* getPacketFilter() const override;
-};
+PacketFilter& IcmpFilter();
 } // namespace net

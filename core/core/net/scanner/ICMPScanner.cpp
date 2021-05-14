@@ -2,19 +2,23 @@
 
 #include "core/net/packet/PacketBuilder.h"
 #include "core/net/packet/PacketParser.h"
-#include "core/net/socket/filter/IcmpFilter.h"
 #include "core/net/packet/layer/EthLayerBuilder.h"
 #include "core/net/packet/layer/IPv4LayerBuilder.h"
 #include "core/net/packet/layer/IcmpLayerBuilder.h"
 #include "core/net/scanner/IScanner.h"
 #include "core/net/socket/SocketPool.h"
+#include "core/net/socket/filter/IcmpFilter.h"
 #include "core/net/socket/v2/IcmpSocket.h"
 #include "core/util/logger/Logger.h"
 
+#include <EthLayer.h>
+#include <IPv4Layer.h>
+#include <IcmpLayer.h>
 #include <IpAddress.h>
 #include <MacAddress.h>
 #include <Packet.h>
 #include <RawPacket.h>
+#include <SystemUtils.h>
 #include <chrono>
 #include <cstdint>
 #include <fmt/chrono.h>
@@ -23,10 +27,6 @@
 #include <stdexcept>
 #include <thread>
 #include <utility>
-#include <EthLayer.h>
-#include <IPv4Layer.h>
-#include <IcmpLayer.h>
-#include <SystemUtils.h>
 
 namespace net
 {
@@ -34,7 +34,7 @@ ICMPScanner::ICMPScanner(v2::RawSocket::Ptr socket)
     : IAsyncScanner(socket)
     , m_socket(socket)
 {
-    m_socket->attachFilter(PacketFilter::get<IcmpFilter>());
+    m_socket->attachFilter(IcmpFilter());
 }
 
 util::Result<ICMPResponse, IcmpError> ICMPScanner::ping(std::string_view host)
@@ -61,7 +61,7 @@ std::future<util::Result<ICMPResponse, IcmpError>> net::ICMPScanner::pingAsync(s
                       .withDstMac("ff:ff:ff:ff:ff:ff"))
         .addLayer(IPv4LayerBuilder::create()
                       .withSrcIp("192.168.178.165")
-                      .withDstIp("192.168.178.1")
+                      .withDstIp(host)
                       .withId(htons(2000))
                       .withTimeToLive(64))
         .addLayer(IcmpLayerBuilder::create()
@@ -70,6 +70,7 @@ std::future<util::Result<ICMPResponse, IcmpError>> net::ICMPScanner::pingAsync(s
                       .withTimestamp()
                       .withPayload("WHAT"));
 
+    const auto sentTime = SystemClock::now();
     if (auto bytesSent = m_socket->sendTo({ "enp0s3" }, packetBuilder.getData()))
     {
         CORE_INFO("Sent {} bytes to {}", *bytesSent, host);
@@ -79,33 +80,32 @@ std::future<util::Result<ICMPResponse, IcmpError>> net::ICMPScanner::pingAsync(s
         CORE_WARN("{}", bytesSent.error());
     }
 
-    m_pendingRequests[host.data()] = Request{ host.data(), {}, std::chrono::system_clock::now() };
+    m_pendingRequests[host.data()] = Request{ host.data(), {}, sentTime };
     return m_pendingRequests[host.data()].promise.get_future();
 }
 
-void ICMPScanner::onPacketReceived(std::uint8_t* bytes, std::size_t len)
+void ICMPScanner::onPacketReceived(const v2::ReceivedPacket& packet)
 {
-    // PacketParser parser({bytes, len});
-    // auto* ethLayer = parser.getPacket().getLayerOfType<pcpp::EthLayer>();
-    // ethLayer->
+    PacketParser parser({ (uint8_t*)packet.bytes.data(), (size_t)packet.bytes.size() });
+    auto* ethLayer = parser.getPacket().getLayerOfType<pcpp::EthLayer>();
+    if (!ethLayer)
+        return;
 
-    const auto* ipHeader = reinterpret_cast<const pcpp::iphdr*>(bytes);
-    pcpp::icmp_echo_reply icmpReply{};
-    icmpReply.header = reinterpret_cast<pcpp::icmp_echo_hdr*>(bytes + sizeof(pcpp::iphdr));
-    icmpReply.data = bytes + sizeof(pcpp::iphdr) + sizeof(pcpp::icmp_echo_hdr);
-    icmpReply.dataLength = (bytes + len) - icmpReply.data;
+    auto ipLayer = parser.getPacket().getLayerOfType<pcpp::IPv4Layer>();
+    if (!ipLayer)
+        return;
 
     ICMPResponse response;
-    response.srcIp = pcpp::IPv4Address(ipHeader->ipSrc);
-    response.dstIp = pcpp::IPv4Address(ipHeader->ipDst);
-    response.ttl = ipHeader->timeToLive;
+    response.srcIp = ipLayer->getSrcIpAddress();
+    response.dstIp = ipLayer->getDstIpAddress();
+    response.ttl = ipLayer->getIPv4Header()->timeToLive;
 
     if (m_pendingRequests.count(response.srcIp.toString()))
     {
         auto& request = m_pendingRequests[response.srcIp.toString()];
 
         response.responseTime = std::chrono::duration_cast<std::chrono::milliseconds>(
-            std::chrono::system_clock::now() - request.time);
+            packet.arrival - request.time);
 
         request.promise.set_value(std::move(response));
 
