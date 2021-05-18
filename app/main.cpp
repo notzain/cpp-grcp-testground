@@ -1,6 +1,8 @@
 #include <backward.hpp>
 #include <chrono>
 #include <core/models/net/Device.h>
+#include <core/net/IPv4Address.h>
+#include <core/net/MacAddress.h>
 #include <core/net/socket/SocketPool.h>
 #include <core/net/socket/v2/IcmpSocket.h>
 #include <core/services/device_discovery/DeviceDiscoveryService.h>
@@ -38,9 +40,30 @@ int main(int argc, const char** argv)
     backward::SignalHandling sh;
 
     const auto args = docopt::docopt(usage, { argv + 1, argv + argc });
-    util::Logger::instance().initialize({ "Embedded",
-                                          args.at("--log").asString(),
-                                          args.at("--verbose").asBool() });
+    util::Logger::instance().initialize({ "Embedded", args.at("--log").asString(), args.at("--verbose").asBool() });
+
+    auto ip = net::IPv4Address::parse("192.168.17.69")
+                  .value_or(net::IPv4Address::zero());
+    CORE_INFO(ip);
+    std::array<std::uint8_t, 4> bytes = { 192, 168, 23, 63 };
+    CORE_INFO(net::IPv4Address::parse({ 192, 168, 66, 23 })
+                  .value_or(net::IPv4Address::zero()));
+    CORE_INFO(net::IPv4Address::parse(bytes)
+                  .value_or(net::IPv4Address::zero()));
+    CORE_INFO(net::IPv4Address::parse(3232239904)
+                  .value_or(net::IPv4Address::zero()));
+    CORE_INFO(net::IPv4Address::parse(3232239904)
+                  .value_or(net::IPv4Address::zero())
+                  .asInt());
+
+    CORE_INFO(net::MacAddress::parse("f3:08:7d:2f:5c:e0")
+                  .value_or(net::MacAddress::zero()));
+    CORE_INFO(net::MacAddress::parse("14:D7:D8:C8:A7:77")
+                  .value_or(net::MacAddress::zero()));
+    CORE_INFO(net::MacAddress::parse("14:D7:D8:C8:A7:121")
+                  .value_or(net::MacAddress::zero()));
+    CORE_INFO(net::MacAddress::parse("14:D7:D8:C8:A7:77:33")
+                  .value_or(net::MacAddress::zero()));
 
     for (const auto& [key, value] : args)
     {

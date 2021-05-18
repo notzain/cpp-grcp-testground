@@ -60,4 +60,13 @@ bool RawSocket::detachFilter(net::PacketFilter& filter)
     return filter.detach(m_socket->native_handle());
 }
 
+void RawSocket::autofillHeaders(bool fill)
+{
+    int on = fill ? 0 : 1;
+    if (setsockopt(m_socket->native_handle(), IPPROTO_IP, IP_HDRINCL, &on, sizeof(on)) != 0)
+    {
+        perror("raw socket");
+    }
+}
+
 } // namespace net::v2

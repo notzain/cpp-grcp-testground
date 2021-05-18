@@ -38,6 +38,7 @@ class RawSocket
 
     bool attachFilter(net::PacketFilter& filter);
     bool detachFilter(net::PacketFilter& filter);
+    void autofillHeaders(bool fill);
 
   private:
     RawSocket(std::string_view interface, std::shared_ptr<RawProtocol::Socket> socket);
