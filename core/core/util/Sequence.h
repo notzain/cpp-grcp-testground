@@ -1,7 +1,9 @@
 #pragma once
 
 #include <boost/type_traits.hpp>
+#include <boost/range/adaptor/indexed.hpp>
 #include <iterator>
+#include <type_traits>
 #include <utility>
 
 namespace util
@@ -28,32 +30,30 @@ class Sequence
         using iterator_category = std::input_iterator_tag;
         using value_type = T;
         using difference_type = std::ptrdiff_t;
-        using pointer = T *;
-        using reference = T &;
+        using pointer = T*;
+        using reference = T&;
 
-        Sequence *seq;
         mutable T value;
 
-        Iterator(Sequence* sequence, T v)
-            : seq(sequence)
-            , value(std::move(v))
+        Iterator(T v)
+            : value(std::move(v))
         {
         }
 
-        Iterator &operator++()
+        Iterator& operator++()
         {
-            value = seq->increment(value);
+            value = increment(value);
             return *this;
         }
 
-        Iterator operator++(int) = delete;
+        Iterator operator++(int) { return Iterator(value++); };
 
-        bool operator==(const Iterator &rhs)
+        bool operator==(const Iterator& rhs)
         {
             return value == rhs.value;
         }
 
-        bool operator!=(const Iterator &rhs)
+        bool operator!=(const Iterator& rhs)
         {
             return !(*this == rhs);
         }
@@ -71,20 +71,20 @@ class Sequence
 
     Iterator begin()
     {
-        return Iterator(this, first);
+        return Iterator(first);
     }
     Iterator end()
     {
-        return Iterator(this, last);
+        return Iterator(last);
     }
 
-    T increment(const T &value) const
+    static T increment(T value)
     {
-        static_assert(boost::has_pre_increment<T>::value, "T has to be incrementable (++ operator), or be template specialized.");
+        static_assert(boost::has_post_increment<T>::value, "T has to be incrementable (++ operator), or be template specialized.");
         static_assert(boost::has_equal_to<T>::value, "T has to be comparable (== operator), or be template specialized.");
 
-        T v = value;
-        return ++v;
+        auto val = value++;
+        return val;
     }
 
     template <template <typename> typename Cont, class Type = T>
@@ -100,7 +100,37 @@ class Sequence
     }
 };
 
-/// @brief Iterate over a sequence, from beginning (inclusive) to end (inclusive)
+template <typename T>
+struct Inclusive
+{
+    T value;
+    Inclusive(T t)
+        : value(std::move(t))
+    {
+    }
+    T operator()()
+    {
+        value = Sequence<T>::increment(value);
+        return value;
+    }
+};
+
+template <typename T>
+struct Exclusive
+{
+    T value;
+    Exclusive(T t)
+        : value(std::move(t))
+    {
+    }
+    T operator()()
+    {
+        value = Sequence<T>::increment(value);
+        return value;
+    }
+};
+
+/// @brief Iterate over a sequence, from beginning (inclusive) to end (exclusive)
 /// @tparam Seq Sequence type
 /// @param b Begin value
 /// @param e End value
@@ -108,7 +138,39 @@ class Sequence
 template <typename T>
 Sequence<T> rangeOf(T begin, T end)
 {
-    return Sequence<T>(begin, Sequence<T>{}.increment(end));
+    return Sequence<T>(begin, end);
+}
+
+
+template <typename T, template <typename> typename Begin = Inclusive, template <typename> typename End = Inclusive>
+Sequence<T> rangeOf(Begin<T> begin, End<T> end)
+{
+    if constexpr (std::is_same_v<Begin<T>, Exclusive<T>>)
+        begin();
+
+    if constexpr (std::is_same_v<End<T>, Inclusive<T>>)
+        end();
+
+    return Sequence<T>(begin.value, end.value);
+}
+
+template <typename T, template <typename> typename Begin>
+Sequence<T> rangeOf(Begin<T> begin, T end)
+{
+    return Sequence<T>(begin(), end);
+}
+
+template <typename T, template <typename> typename End>
+Sequence<T> rangeOf(T begin, End<T> end)
+{
+    return Sequence<T>(begin, end());
+}
+
+// returns iterator with `.value()` and `.index()`
+// or deconstruct with `const auto& [index, value]`
+template <typename T, template <typename> typename Container>
+auto rangeIndexed(const Container<T>& input) {
+    return input | boost::adaptors::indexed(0);
 }
 
 } // namespace util

@@ -6,7 +6,9 @@
 #include <optional>
 #include <string>
 
+#include "core/net/IPv4Address.h"
 #include "core/util/Result.h"
+#include "core/util/Time.h"
 
 namespace net
 {
@@ -15,18 +17,18 @@ class DeviceDiscoveryTask
   public:
     struct TaskSuccess
     {
-        std::string srcIp;
-        std::string dstIp;
+        IPv4Address srcIp;
+        IPv4Address dstIp;
         std::uint8_t ttl;
-        std::chrono::milliseconds responseTime;
-        std::chrono::time_point<std::chrono::system_clock> completedAt;
+        Milliseconds responseTime;
+        TimePoint completedAt;
     };
 
     struct TaskError
     {
-        std::string srcIp;
-        std::string dstIp;
-        std::chrono::time_point<std::chrono::system_clock> completedAt;
+        IPv4Address srcIp;
+        IPv4Address dstIp;
+        TimePoint completedAt;
     };
 
     using ResultType = util::Result<TaskSuccess, TaskError>;
@@ -40,19 +42,19 @@ class DeviceDiscoveryTask
     virtual ~DeviceDiscoveryTask() = default;
     virtual void start() = 0;
     virtual void stop() = 0;
-    virtual void discover(std::string_view host) = 0;
+    virtual void discover(const IPv4Address& host) = 0;
 
-    virtual void addSuccess(const std::string& host, TaskSuccess&& result);
+    virtual void addSuccess(const IPv4Address& host, TaskSuccess&& result);
 
-    virtual void addError(const std::string& host, TaskError&& error);
+    virtual void addError(const IPv4Address& host, TaskError&& error);
 
-    virtual bool hasResult(const std::string& host) const;
+    virtual bool hasResult(const IPv4Address& host) const;
 
-    virtual std::optional<ResultType> getResult(const std::string& host) const;
+    virtual std::optional<ResultType> getResult(const IPv4Address& host) const;
 
-    virtual std::optional<ResultType> consumeResult(const std::string& host);
+    virtual std::optional<ResultType> consumeResult(const IPv4Address& host);
 
-    virtual void clearResult(const std::string& host);
+    virtual void clearResult(const IPv4Address& host);
 
     virtual void clearResults();
 

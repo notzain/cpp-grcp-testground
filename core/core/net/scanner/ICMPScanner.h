@@ -9,6 +9,7 @@
 #include "IScanner.h"
 #include "IpAddress.h"
 #include "MacAddress.h"
+#include "core/net/IPv4Address.h"
 #include "core/net/scanner/IScanner.h"
 #include "core/net/socket/v2/IcmpSocket.h"
 #include "core/net/socket/v2/Protocols.h"
@@ -21,8 +22,8 @@ namespace net
 
 struct ICMPResponse
 {
-    pcpp::IPv4Address srcIp;
-    pcpp::IPv4Address dstIp;
+    IPv4Address srcIp;
+    IPv4Address dstIp;
 
     std::uint8_t ttl;
     std::chrono::milliseconds responseTime;
@@ -30,8 +31,8 @@ struct ICMPResponse
 
 struct IcmpError
 {
-    pcpp::IPv4Address srcIp;
-    pcpp::IPv4Address dstIp;
+    IPv4Address srcIp;
+    IPv4Address dstIp;
     ErrorType error;
 };
 
@@ -43,7 +44,7 @@ class ICMPScanner : public IAsyncScanner<v2::IcmpProtocol, ICMPResponse, IcmpErr
 
     struct Request
     {
-        std::string dstIp;
+        IPv4Address dstIp;
         std::promise<util::Result<ICMPResponse, IcmpError>> promise;
         TimePoint time;
     };
@@ -52,8 +53,8 @@ class ICMPScanner : public IAsyncScanner<v2::IcmpProtocol, ICMPResponse, IcmpErr
   public:
     ICMPScanner(v2::RawSocket::Ptr socket);
 
-    util::Result<ICMPResponse, IcmpError> ping(std::string_view host) override;
-    std::future<util::Result<ICMPResponse, IcmpError>> pingAsync(std::string_view host) override;
+    util::Result<ICMPResponse, IcmpError> ping(const IPv4Address& host) override;
+    std::future<util::Result<ICMPResponse, IcmpError>> pingAsync(const IPv4Address& host) override;
 
     bool hasPendingRequests() const override;
 

@@ -1,4 +1,5 @@
 #include "IcmpDeviceDiscoveryTask.h"
+#include "core/util/Time.h"
 #include "core/util/async/Task.h"
 #include "core/util/logger/Logger.h"
 
@@ -10,20 +11,20 @@ void IcmpPingResolver::onCompletion(const util::Result<net::ICMPResponse, net::I
 {
     if (icmpResponse)
     {
-        m_discoveryTask->addSuccess(icmpResponse->dstIp.toString(),
-                                    { icmpResponse->dstIp.toString(),
-                                      icmpResponse->srcIp.toString(),
+        m_discoveryTask->addSuccess(icmpResponse->dstIp,
+                                    { icmpResponse->dstIp,
+                                      icmpResponse->srcIp,
                                       icmpResponse->ttl,
                                       icmpResponse->responseTime,
-                                      std::chrono::system_clock::now() });
+                                      SystemClock::now()  });
     }
     else
     {
         const auto& error = icmpResponse.error();
-        m_discoveryTask->addError(error.dstIp.toString(),
-                                  { error.dstIp.toString(),
-                                    error.srcIp.toString(),
-                                    std::chrono::system_clock::now() });
+        m_discoveryTask->addError(error.dstIp,
+                                  { error.dstIp,
+                                    error.srcIp,
+                                    SystemClock::now() });
     }
 }
 
@@ -62,9 +63,9 @@ void IcmpDeviceDiscoveryTask::stop()
     m_icmpScanner.stop();
 }
 
-void IcmpDeviceDiscoveryTask::discover(std::string_view host)
+void IcmpDeviceDiscoveryTask::discover(const IPv4Address& host)
 {
-    auto resolver = std::make_shared<IcmpPingResolver>(host.data(), this);
+    auto resolver = std::make_shared<IcmpPingResolver>(host, this);
     resolver->setFuture(m_icmpScanner.pingAsync(host));
 
     util::TaskRunner::defaultRunner()

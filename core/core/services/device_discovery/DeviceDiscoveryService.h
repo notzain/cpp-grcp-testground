@@ -5,9 +5,11 @@
 #include <vector>
 
 #include "DeviceDiscoveryTask.h"
+#include "core/net/IPv4Address.h"
 
 namespace net
 {
+
 class DeviceDiscoveryService
 {
     std::vector<std::unique_ptr<DeviceDiscoveryTask>> m_discoveryTasks;
@@ -28,8 +30,8 @@ class DeviceDiscoveryService
 
     void addDiscoveryTask(std::unique_ptr<DeviceDiscoveryTask> task);
 
-    void discover(std::string_view host);
-    void discover(std::string_view beginIp, std::string_view endIp);
+    void discover(const IPv4Address& host);
+    void discover(const IPv4Address& begin, const IPv4Address& end);
 
     void clearResults();
 };

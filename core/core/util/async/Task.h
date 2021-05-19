@@ -75,3 +75,6 @@ class TaskRunner
     void resolve(std::shared_ptr<Task> task);
 };
 } // namespace util
+
+using util::Task;
+using util::TaskRunner;

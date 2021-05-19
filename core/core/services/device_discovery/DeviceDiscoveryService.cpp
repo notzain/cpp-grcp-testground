@@ -1,17 +1,18 @@
 #include "DeviceDiscoveryService.h"
-#include "core/net/IPv4Range.h"
+#include "core/net/IPv4Address.h"
+#include "core/util/Sequence.h"
 
 namespace net
 {
-void DeviceDiscoveryService::discover(std::string_view beginIp, std::string_view endIp)
+void DeviceDiscoveryService::discover(const IPv4Address& begin, const IPv4Address& end)
 {
-    for (const auto ip : util::rangeOf<pcpp::IPv4Address>({ beginIp.data() }, { endIp.data() }))
+    for (const auto ip : util::rangeOf(begin, util::Inclusive(end)))
     {
-        discover(ip.toString());
+        discover(ip);
     }
 }
 
-void DeviceDiscoveryService::discover(std::string_view host)
+void DeviceDiscoveryService::discover(const IPv4Address& host)
 {
     for (auto& task : m_discoveryTasks)
     {

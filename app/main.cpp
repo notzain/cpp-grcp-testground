@@ -1,3 +1,4 @@
+#include "core/util/Sequence.h"
 #include <backward.hpp>
 #include <chrono>
 #include <core/models/net/Device.h>
@@ -40,7 +41,9 @@ int main(int argc, const char** argv)
     backward::SignalHandling sh;
 
     const auto args = docopt::docopt(usage, { argv + 1, argv + argc });
-    util::Logger::instance().initialize({ "Embedded", args.at("--log").asString(), args.at("--verbose").asBool() });
+    util::Logger::instance().initialize({ "Embedded",
+                                          args.at("--log").asString(),
+                                          args.at("--verbose").asBool() });
 
     auto ip = net::IPv4Address::parse("192.168.17.69")
                   .value_or(net::IPv4Address::zero());
@@ -56,7 +59,22 @@ int main(int argc, const char** argv)
                   .value_or(net::IPv4Address::zero())
                   .asInt());
 
-    CORE_INFO(net::MacAddress::parse("f3:08:7d:2f:5c:e0")
+    CORE_INFO("{}",
+              fmt::join(net::IPv4Address::parse(3232239904)
+                            .value_or(net::IPv4Address::zero())
+                            .asBytes(),
+                        ", "));
+    CORE_INFO("{}",
+              fmt::join(net::IPv4Address::parse(3232239904)
+                            .value_or(net::IPv4Address::zero())
+                            .asBytes(ByteOrder::NetworkOrder),
+                        ", "));
+
+    CORE_INFO(net::MacAddress::parse("f3 08:7d:2f:5c:e0")
+                  .value_or(net::MacAddress::zero()));
+    CORE_INFO(net::MacAddress::parse("f3 08 7d 2f 5c e0")
+                  .value_or(net::MacAddress::zero()));
+    CORE_INFO(net::MacAddress::parse(267217785543904)
                   .value_or(net::MacAddress::zero()));
     CORE_INFO(net::MacAddress::parse("14:D7:D8:C8:A7:77")
                   .value_or(net::MacAddress::zero()));
@@ -69,6 +87,23 @@ int main(int argc, const char** argv)
     {
         CORE_INFO("{} - {}", key, value);
     }
+    auto range = std::vector{ 3, 5, 2, 18, 328, 10 };
+    for (const auto& [index, value] : util::rangeIndexed(range))
+    {
+        CORE_INFO("value = {}, index = {}", value, index);
+    }
+    for (const auto& ip : util::rangeOf(*net::IPv4Address::parse("192.168.178.1"), *net::IPv4Address::parse("192.168.178.5")))
+    {
+        CORE_INFO(ip);
+    }
+    CORE_INFO("{}", fmt::join(util::rangeOf(1, 5), ", "));
+    CORE_INFO("{}", fmt::join(util::rangeOf(1, util::Inclusive(5)), ", "));
+    CORE_INFO("{}", fmt::join(util::rangeOf(util::Exclusive(1), 5), ", "));
+
+    // for (const auto& mac : util::rangeOf(net::MacAddress::zero(), *net::MacAddress::parse("00:00:00:00:01:FF")))
+    // {
+    //     CORE_INFO(mac);
+    // }
 
     net::DeviceDiscoveryService dds;
     dds.addDiscoveryTask(
@@ -98,7 +133,7 @@ int main(int argc, const char** argv)
         if (c == 'c')
             dds.clearResults();
         else
-            dds.discover("192.168.178.1", "192.168.178.2");
+            dds.discover(*net::IPv4Address::parse("192.168.178.1"), *net::IPv4Address::parse("192.168.178.2"));
     }
 
     return 0;

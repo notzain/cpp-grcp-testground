@@ -18,6 +18,18 @@ IPv4Address::IPv4Address(std::array<std::uint8_t, 4> bytes)
 {
 }
 
+IPv4Address::IPv4Address(const pcpp::IPv4Address& ip)
+{
+    m_ipAsBytes = parse(ip.toInt())->asBytes();
+}
+
+Result<IPv4Address> IPv4Address::parse(std::array<std::uint8_t, 4> bytes, ByteOrder::Value byteOrder)
+{
+    return IPv4Address(ByteOrder::copy(bytes)
+                           .from(byteOrder)
+                           .to(ByteOrder::NetworkOrder));
+}
+
 Result<IPv4Address> IPv4Address::parse(std::initializer_list<std::uint8_t> bytes, ByteOrder::Value byteOrder)
 {
     if (bytes.size() != 4)

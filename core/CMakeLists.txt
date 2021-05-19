@@ -2,7 +2,6 @@ add_library(
   core SHARED
   core/models/net/Device.cpp
   core/net/IPv4Address.cpp
-  core/net/IPv4Range.cpp
   core/net/MacAddress.cpp
   core/net/NetworkInterface.cpp
   core/net/packet/layer/EthLayerBuilder.cpp

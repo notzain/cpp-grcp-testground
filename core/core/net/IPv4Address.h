@@ -4,21 +4,33 @@
 #include "core/util/ByteOrder.h"
 #include "core/util/Result.h"
 
+#include <IpAddress.h>
 #include <array>
+#include <boost/operators.hpp>
 #include <cstdint>
 #include <initializer_list>
 #include <nonstd/span.hpp>
 #include <string>
 #include <string_view>
 
+namespace pcpp
+{
+class IPv4Address;
+}
+
 namespace net
 {
-class IPv4Address : public traits::Printable<IPv4Address>
+class IPv4Address
+    : public traits::Printable<IPv4Address>
 {
     // Stored in network order
-    std::array<std::uint8_t, 4> m_ipAsBytes;
+    std::array<std::uint8_t, 4> m_ipAsBytes{ 0 };
 
   public:
+    // Allow conversion from pcpp
+    IPv4Address(const pcpp::IPv4Address& ip);
+    IPv4Address() = default;
+    static Result<IPv4Address> parse(std::array<std::uint8_t, 4> bytes, ByteOrder::Value byteOrder = ByteOrder::HostOrder);
     static Result<IPv4Address> parse(std::initializer_list<std::uint8_t> bytes, ByteOrder::Value byteOrder = ByteOrder::HostOrder);
     static Result<IPv4Address> parse(nonstd::span<std::uint8_t> bytes, ByteOrder::Value byteOrder = ByteOrder::HostOrder);
     static Result<IPv4Address> parse(std::string_view ip);
@@ -46,6 +58,11 @@ class IPv4Address : public traits::Printable<IPv4Address>
 
     bool operator==(std::string_view other) const { return asString() == other; }
     bool operator!=(std::string_view other) const { return !(*this == other); }
+
+    IPv4Address operator++(int) const
+    {
+        return *IPv4Address::parse(this->asInt() + 1);
+    }
 
   private:
     IPv4Address(std::array<std::uint8_t, 4> bytes);

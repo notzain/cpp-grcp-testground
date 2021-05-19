@@ -9,6 +9,7 @@
 #include <thread>
 #include <vector>
 
+#include "core/net/IPv4Address.h"
 #include "core/net/socket/v2/ReceivingSocket.h"
 #include "core/util/Result.h"
 #include "core/util/async/Resolver.h"
@@ -21,7 +22,7 @@ class IScanner
 {
   public:
     virtual ~IScanner() = default;
-    virtual util::Result<ResultType, ErrorType> ping(std::string_view host) = 0;
+    virtual Result<ResultType, ErrorType> ping(const IPv4Address& host) = 0;
 
     virtual void start() = 0;
     virtual void stop() = 0;
@@ -47,21 +48,21 @@ class IAsyncScanner
         {
             if (!scanner->m_running.load())
             {
-                return util::Task::End{};
+                return Task::End{};
             }
             if (scanner->hasPendingRequests())
             {
                 if (auto packet = scanner->m_asyncSocket->nextReceivedPacket())
                 {
                     scanner->onPacketReceived(*packet);
-                    return util::Task::RunAgain{};
+                    return Task::RunAgain{};
                 }
                 scanner->handleTimeouts();
-                return util::Task::RunAgainDelayed{ std::chrono::milliseconds(100) };
+                return Task::RunAgainDelayed{ std::chrono::milliseconds(100) };
             }
             else
             {
-                return util::Task::RunAgainDelayed{
+                return Task::RunAgainDelayed{
                     std::chrono::seconds(1)
                 };
             }
@@ -78,13 +79,13 @@ class IAsyncScanner
 
     virtual ~IAsyncScanner() = default;
 
-    virtual std::future<util::Result<ResultType, ErrorType>> pingAsync(std::string_view host) = 0;
+    virtual std::future<Result<ResultType, ErrorType>> pingAsync(const IPv4Address& host) = 0;
 
     void start() override
     {
         m_running.store(true);
 
-        m_currentTask = util::TaskRunner::defaultRunner()
+        m_currentTask = TaskRunner::defaultRunner()
                             .post<PingResolver>(this);
     }
 

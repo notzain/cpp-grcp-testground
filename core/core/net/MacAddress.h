@@ -16,9 +16,11 @@ namespace net
 class MacAddress : public traits::Printable<MacAddress>
 {
     // Stored in network order
-    std::array<std::uint8_t, 6> m_macAsBytes;
+    std::array<std::uint8_t, 6> m_macAsBytes = { 0 };
 
   public:
+    MacAddress() = default;
+    static Result<MacAddress> parse(std::array<std::uint8_t, 6> bytes, ByteOrder::Value byteOrder = ByteOrder::HostOrder);
     static Result<MacAddress> parse(std::initializer_list<std::uint8_t> bytes, ByteOrder::Value byteOrder = ByteOrder::HostOrder);
     static Result<MacAddress> parse(nonstd::span<std::uint8_t> bytes, ByteOrder::Value byteOrder = ByteOrder::HostOrder);
     static Result<MacAddress> parse(std::string_view ip);
@@ -44,6 +46,11 @@ class MacAddress : public traits::Printable<MacAddress>
 
     bool operator==(std::string_view other) const { return asString() == other; }
     bool operator!=(std::string_view other) const { return !(*this == other); }
+
+    MacAddress operator++(int) const
+    {
+        return *MacAddress::parse(this->asInt() + 1);
+    }
 
   private:
     MacAddress(std::array<std::uint8_t, 6> bytes);

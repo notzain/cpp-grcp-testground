@@ -1,38 +1,39 @@
 #include "DeviceDiscoveryTask.h"
+#include "core/net/IPv4Address.h"
 
 namespace net
 {
-void DeviceDiscoveryTask::addSuccess(const std::string& host, TaskSuccess&& result)
+void DeviceDiscoveryTask::addSuccess(const IPv4Address& host, TaskSuccess&& result)
 {
     if (m_onDevicePinged)
         m_onDevicePinged(result);
 
-    m_results[host] = std::move(result);
+    m_results[host.asString()] = std::move(result);
 }
 
-void DeviceDiscoveryTask::addError(const std::string& host, TaskError&& error)
+void DeviceDiscoveryTask::addError(const IPv4Address& host, TaskError&& error)
 {
     if (m_onPingFailed)
         m_onPingFailed(error);
 
-    m_results[host] = Error(std::move(error));
+    m_results[host.asString()] = Error(std::move(error));
 }
 
-bool DeviceDiscoveryTask::hasResult(const std::string& host) const
+bool DeviceDiscoveryTask::hasResult(const IPv4Address& host) const
 {
-    return m_results.count(host);
+    return m_results.count(host.asString());
 }
 
-std::optional<DeviceDiscoveryTask::ResultType> DeviceDiscoveryTask::getResult(const std::string& host) const
+std::optional<DeviceDiscoveryTask::ResultType> DeviceDiscoveryTask::getResult(const IPv4Address& host) const
 {
     if (hasResult(host))
     {
-        return m_results.at(host);
+        return m_results.at(host.asString());
     }
     return std::nullopt;
 }
 
-std::optional<DeviceDiscoveryTask::ResultType> DeviceDiscoveryTask::consumeResult(const std::string& host)
+std::optional<DeviceDiscoveryTask::ResultType> DeviceDiscoveryTask::consumeResult(const IPv4Address& host)
 {
     auto result = getResult(host);
     if (result)
@@ -47,9 +48,9 @@ void DeviceDiscoveryTask::clearResults()
     m_results.clear();
 }
 
-void DeviceDiscoveryTask::clearResult(const std::string& host)
+void DeviceDiscoveryTask::clearResult(const IPv4Address& host)
 {
-    m_results.erase(host);
+    m_results.erase(host.asString());
 }
 
 std::function<void(const DeviceDiscoveryTask::TaskError&)>& DeviceDiscoveryTask::onPingFailed()

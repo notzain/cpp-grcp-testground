@@ -37,22 +37,22 @@ ICMPScanner::ICMPScanner(v2::RawSocket::Ptr socket)
     m_socket->attachFilter(IcmpFilter());
 }
 
-util::Result<ICMPResponse, IcmpError> ICMPScanner::ping(std::string_view host)
+util::Result<ICMPResponse, IcmpError> ICMPScanner::ping(const IPv4Address& host)
 {
     auto fut = pingAsync(host);
     if (fut.wait_for(std::chrono::seconds(5)) == std::future_status::timeout)
     {
-        const auto& request = m_pendingRequests[host.data()];
-        m_pendingRequests.erase(host.data());
+        const auto& request = m_pendingRequests[host.asString()];
+        m_pendingRequests.erase(host.asString());
         return Error(IcmpError{
-            pcpp::IPv4Address(host.data()),
+            host,
             request.dstIp,
             ErrorType::TimedOut });
     }
     return fut.get();
 }
 
-std::future<util::Result<ICMPResponse, IcmpError>> net::ICMPScanner::pingAsync(std::string_view host)
+std::future<util::Result<ICMPResponse, IcmpError>> net::ICMPScanner::pingAsync(const IPv4Address& host)
 {
     PacketBuilder packetBuilder;
     packetBuilder
@@ -61,7 +61,7 @@ std::future<util::Result<ICMPResponse, IcmpError>> net::ICMPScanner::pingAsync(s
                       .withDstMac("ff:ff:ff:ff:ff:ff"))
         .addLayer(IPv4LayerBuilder::create()
                       .withSrcIp("192.168.178.165")
-                      .withDstIp(host)
+                      .withDstIp(host.asString())
                       .withId(htons(2000))
                       .withTimeToLive(64))
         .addLayer(IcmpLayerBuilder::create()
@@ -80,8 +80,8 @@ std::future<util::Result<ICMPResponse, IcmpError>> net::ICMPScanner::pingAsync(s
         CORE_WARN("{}", bytesSent.error());
     }
 
-    m_pendingRequests[host.data()] = Request{ host.data(), {}, sentTime };
-    return m_pendingRequests[host.data()].promise.get_future();
+    m_pendingRequests[host.asString()] = Request{ host, {}, sentTime };
+    return m_pendingRequests[host.asString()].promise.get_future();
 }
 
 void ICMPScanner::onPacketReceived(const v2::ReceivedPacket& packet)
@@ -100,16 +100,16 @@ void ICMPScanner::onPacketReceived(const v2::ReceivedPacket& packet)
     response.dstIp = ipLayer->getDstIpAddress();
     response.ttl = ipLayer->getIPv4Header()->timeToLive;
 
-    if (m_pendingRequests.count(response.srcIp.toString()))
+    if (m_pendingRequests.count(response.srcIp.asString()))
     {
-        auto& request = m_pendingRequests[response.srcIp.toString()];
+        auto& request = m_pendingRequests[response.srcIp.asString()];
 
         response.responseTime = std::chrono::duration_cast<std::chrono::milliseconds>(
             packet.arrival - request.time);
 
         request.promise.set_value(std::move(response));
 
-        m_pendingRequests.erase(response.srcIp.toString());
+        m_pendingRequests.erase(response.srcIp.asString());
     }
 }
 
@@ -122,7 +122,7 @@ void ICMPScanner::handleTimeouts()
         auto& [host, req] = *it;
         if (now - req.time >= defaultTimeout)
         {
-            req.promise.set_value(Error<IcmpError>({ pcpp::IPv4Address(host),
+            req.promise.set_value(Error<IcmpError>({ IPv4Address::parse(host).value_or(IPv4Address::zero()),
                                                      req.dstIp,
                                                      ErrorType::TimedOut }));
 
