@@ -12,7 +12,6 @@
 #include "core/net/IPv4Address.h"
 #include "core/net/socket/v2/ReceivingSocket.h"
 #include "core/util/Result.h"
-#include "core/util/async/Resolver.h"
 #include "core/util/async/Task.h"
 
 namespace net

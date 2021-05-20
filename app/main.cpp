@@ -12,7 +12,6 @@
 #include <core/util/Enum.h>
 #include <core/util/Result.h>
 #include <core/util/Thread.h>
-#include <core/util/async/Resolver.h>
 #include <core/util/async/TaskContext.h>
 #include <core/util/logger/Logger.h>
 #include <docopt/docopt.h>

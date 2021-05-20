@@ -20,7 +20,6 @@ add_library(
   core/services/device_discovery/DeviceDiscoveryTask.cpp
   core/services/device_discovery/IcmpDeviceDiscoveryTask.cpp
   core/traits/serializer/JsonSerializer.cpp
-  core/util/async/Resolver.cpp
   core/util/async/Task.cpp
   core/util/logger/Logger.cpp
   core/util/Result.cpp
