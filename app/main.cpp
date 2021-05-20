@@ -87,6 +87,7 @@ int main(int argc, const char** argv)
         CORE_INFO("{} - {}", key, value);
     }
     auto range = std::vector{ 3, 5, 2, 18, 328, 10 };
+
     for (const auto& [index, value] : util::rangeIndexed(range))
     {
         CORE_INFO("value = {}, index = {}", value, index);
@@ -110,9 +111,11 @@ int main(int argc, const char** argv)
             .construct<net::IcmpDeviceDiscoveryTask>(net::SocketPool::defaultPool().createRawSocket("enp0s3"))
             .withSuccessCallback([](const auto& result) {
                 const auto timepoint = std::chrono::system_clock::to_time_t(result.completedAt);
-                CORE_INFO("'{}' -> '{}' in {} arrived on {:%c}",
+                CORE_INFO("'{} ({})' -> '{} ({})' in {} arrived on {:%c}",
                           result.srcIp,
+                          result.srcMac.value_or(net::MacAddress::zero()),
                           result.dstIp,
+                          result.dstMac.value_or(net::MacAddress::zero()),
                           result.responseTime,
                           fmt::localtime(timepoint));
             })

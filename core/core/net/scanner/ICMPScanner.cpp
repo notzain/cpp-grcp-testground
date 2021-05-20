@@ -97,7 +97,11 @@ void ICMPScanner::onPacketReceived(const v2::ReceivedPacket& packet)
 
     ICMPResponse response;
     response.srcIp = ipLayer->getSrcIpAddress();
+    response.srcMac = ethLayer->getSourceMac();
+
     response.dstIp = ipLayer->getDstIpAddress();
+    response.dstMac = ethLayer->getDestMac();
+
     response.ttl = ipLayer->getIPv4Header()->timeToLive;
 
     if (m_pendingRequests.count(response.srcIp.asString()))
@@ -134,6 +138,7 @@ void ICMPScanner::handleTimeouts()
         }
     }
 }
+
 bool ICMPScanner::hasPendingRequests() const
 {
     return !m_pendingRequests.empty();

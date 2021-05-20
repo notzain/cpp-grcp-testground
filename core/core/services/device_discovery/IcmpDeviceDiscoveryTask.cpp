@@ -7,16 +7,19 @@
 #include <exception>
 namespace net
 {
-void IcmpPingResolver::onCompletion(const util::Result<net::ICMPResponse, net::IcmpError>& icmpResponse)
+void IcmpPingResolver::onCompletion(const Result<ICMPResponse, IcmpError>& icmpResponse)
 {
     if (icmpResponse)
     {
+        // Reverse src and dst so we follow the "request" order, and not the "reply" order
         m_discoveryTask->addSuccess(icmpResponse->dstIp,
                                     { icmpResponse->dstIp,
+                                      icmpResponse->dstMac,
                                       icmpResponse->srcIp,
+                                      icmpResponse->srcMac,
                                       icmpResponse->ttl,
                                       icmpResponse->responseTime,
-                                      SystemClock::now()  });
+                                      SystemClock::now() });
     }
     else
     {

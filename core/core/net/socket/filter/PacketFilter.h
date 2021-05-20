@@ -1,5 +1,6 @@
 #pragma once
 
+#include "core/util/Result.h"
 struct sock_fprog;
 
 namespace net

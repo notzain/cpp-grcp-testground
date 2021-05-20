@@ -1,7 +1,7 @@
 #pragma once
 
-#include <boost/type_traits.hpp>
 #include <boost/range/adaptor/indexed.hpp>
+#include <boost/type_traits.hpp>
 #include <iterator>
 #include <type_traits>
 #include <utility>
@@ -83,8 +83,8 @@ class Sequence
         static_assert(boost::has_post_increment<T>::value, "T has to be incrementable (++ operator), or be template specialized.");
         static_assert(boost::has_equal_to<T>::value, "T has to be comparable (== operator), or be template specialized.");
 
-        auto val = value++;
-        return val;
+        value++;
+        return value;
     }
 
     template <template <typename> typename Cont, class Type = T>
@@ -141,7 +141,6 @@ Sequence<T> rangeOf(T begin, T end)
     return Sequence<T>(begin, end);
 }
 
-
 template <typename T, template <typename> typename Begin = Inclusive, template <typename> typename End = Inclusive>
 Sequence<T> rangeOf(Begin<T> begin, End<T> end)
 {
@@ -169,7 +168,8 @@ Sequence<T> rangeOf(T begin, End<T> end)
 // returns iterator with `.value()` and `.index()`
 // or deconstruct with `const auto& [index, value]`
 template <typename T, template <typename> typename Container>
-auto rangeIndexed(const Container<T>& input) {
+auto rangeIndexed(const Container<T>& input)
+{
     return input | boost::adaptors::indexed(0);
 }
 

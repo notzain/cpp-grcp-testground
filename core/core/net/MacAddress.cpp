@@ -1,7 +1,21 @@
 #include "MacAddress.h"
 
+#include <MacAddress.h>
+#include <boost/algorithm/string/classification.hpp>
+#include <boost/range/algorithm_ext.hpp>
+#include <cstdint>
+#include <nonstd/span.hpp>
+
 namespace net
 {
+
+MacAddress::MacAddress(const pcpp::MacAddress& mac)
+{
+    m_macAsBytes = ByteOrder::copy(nonstd::span(mac.getRawData(), 6))
+                       .from(ByteOrder::HostOrder)
+                       .to<std::array<std::uint8_t, 6>>(ByteOrder::NetworkOrder);
+}
+
 MacAddress::MacAddress(std::array<std::uint8_t, 6> bytes)
     : m_macAsBytes(std::move(bytes))
 {
@@ -83,6 +97,11 @@ bool MacAddress::isBetween(const MacAddress& begin, const MacAddress& end) const
         return isBetween(end, begin);
 
     return *this > begin && *this < end;
+}
+
+bool MacAddress::isBroadcast(const MacAddress& mac) const
+{
+    return *this == broadcast();
 }
 
 std::string MacAddress::asString() const

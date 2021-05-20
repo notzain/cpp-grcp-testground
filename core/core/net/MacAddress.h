@@ -11,6 +11,10 @@
 #include <string>
 #include <string_view>
 
+namespace pcpp
+{
+class MacAddress;
+}
 namespace net
 {
 class MacAddress : public traits::Printable<MacAddress>
@@ -19,6 +23,7 @@ class MacAddress : public traits::Printable<MacAddress>
     std::array<std::uint8_t, 6> m_macAsBytes = { 0 };
 
   public:
+    MacAddress(const pcpp::MacAddress& mac);
     MacAddress() = default;
     static Result<MacAddress> parse(std::array<std::uint8_t, 6> bytes, ByteOrder::Value byteOrder = ByteOrder::HostOrder);
     static Result<MacAddress> parse(std::initializer_list<std::uint8_t> bytes, ByteOrder::Value byteOrder = ByteOrder::HostOrder);
@@ -30,6 +35,7 @@ class MacAddress : public traits::Printable<MacAddress>
     static const MacAddress& zero();
 
     bool isBetween(const MacAddress& begin, const MacAddress& end) const;
+    bool isBroadcast(const MacAddress& mac) const;
 
     std::string asString() const;
     std::array<std::uint8_t, 6> asBytes(ByteOrder::Value byteOrder = ByteOrder::HostOrder) const;
@@ -47,9 +53,11 @@ class MacAddress : public traits::Printable<MacAddress>
     bool operator==(std::string_view other) const { return asString() == other; }
     bool operator!=(std::string_view other) const { return !(*this == other); }
 
-    MacAddress operator++(int) const
+    MacAddress operator++(int)
     {
-        return *MacAddress::parse(this->asInt() + 1);
+        auto prev = *this;
+        m_macAsBytes = MacAddress::parse(this->asInt() + 1)->m_macAsBytes;
+        return prev;
     }
 
   private:

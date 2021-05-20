@@ -10,6 +10,7 @@
 #include "IpAddress.h"
 #include "MacAddress.h"
 #include "core/net/IPv4Address.h"
+#include "core/net/MacAddress.h"
 #include "core/net/scanner/IScanner.h"
 #include "core/net/socket/v2/IcmpSocket.h"
 #include "core/net/socket/v2/Protocols.h"
@@ -24,6 +25,9 @@ struct ICMPResponse
 {
     IPv4Address srcIp;
     IPv4Address dstIp;
+
+    MacAddress srcMac;
+    MacAddress dstMac;
 
     std::uint8_t ttl;
     std::chrono::milliseconds responseTime;

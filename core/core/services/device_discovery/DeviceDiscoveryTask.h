@@ -7,6 +7,7 @@
 #include <string>
 
 #include "core/net/IPv4Address.h"
+#include "core/net/MacAddress.h"
 #include "core/util/Result.h"
 #include "core/util/Time.h"
 
@@ -18,7 +19,11 @@ class DeviceDiscoveryTask
     struct TaskSuccess
     {
         IPv4Address srcIp;
+        std::optional<MacAddress> srcMac;
+
         IPv4Address dstIp;
+        std::optional<MacAddress> dstMac;
+
         std::uint8_t ttl;
         Milliseconds responseTime;
         TimePoint completedAt;

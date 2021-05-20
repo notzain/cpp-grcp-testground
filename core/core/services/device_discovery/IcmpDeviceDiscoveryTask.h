@@ -10,7 +10,7 @@ namespace net
 {
 class IcmpDeviceDiscoveryTask;
 
-class IcmpPingResolver : public util::v2::FutureResolver<util::Result<net::ICMPResponse, net::IcmpError>>
+class IcmpPingResolver : public util::v2::FutureResolver<Result<ICMPResponse, IcmpError>>
 {
     IPv4Address m_host;
     IcmpDeviceDiscoveryTask* m_discoveryTask;
@@ -22,7 +22,7 @@ class IcmpPingResolver : public util::v2::FutureResolver<util::Result<net::ICMPR
     {
     }
 
-    void onCompletion(const util::Result<net::ICMPResponse, net::IcmpError>& icmpResponse) override;
+    void onCompletion(const Result<ICMPResponse, IcmpError>& icmpResponse) override;
     void onException(const std::exception_ptr& exception) override;
 };
 

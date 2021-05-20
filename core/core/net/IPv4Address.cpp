@@ -20,7 +20,9 @@ IPv4Address::IPv4Address(std::array<std::uint8_t, 4> bytes)
 
 IPv4Address::IPv4Address(const pcpp::IPv4Address& ip)
 {
-    m_ipAsBytes = parse(ip.toInt())->asBytes();
+    m_ipAsBytes = ByteOrder::copy(nonstd::span(ip.toBytes(), 4))
+                      .from(ByteOrder::HostOrder)
+                      .to<std::array<std::uint8_t, 4>>(ByteOrder::NetworkOrder);
 }
 
 Result<IPv4Address> IPv4Address::parse(std::array<std::uint8_t, 4> bytes, ByteOrder::Value byteOrder)

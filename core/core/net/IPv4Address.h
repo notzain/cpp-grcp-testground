@@ -59,9 +59,11 @@ class IPv4Address
     bool operator==(std::string_view other) const { return asString() == other; }
     bool operator!=(std::string_view other) const { return !(*this == other); }
 
-    IPv4Address operator++(int) const
+    IPv4Address operator++(int)
     {
-        return *IPv4Address::parse(this->asInt() + 1);
+        auto prev = *this;
+        m_ipAsBytes = IPv4Address::parse(this->asInt() + 1)->m_ipAsBytes;
+        return prev;
     }
 
   private:
