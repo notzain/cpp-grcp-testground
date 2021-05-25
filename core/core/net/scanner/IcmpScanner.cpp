@@ -1,5 +1,6 @@
-#include "ICMPScanner.h"
+#include "IcmpScanner.h"
 
+#include "core/net/MacAddress.h"
 #include "core/net/packet/PacketBuilder.h"
 #include "core/net/packet/PacketParser.h"
 #include "core/net/packet/layer/EthLayerBuilder.h"
@@ -30,14 +31,14 @@
 
 namespace net
 {
-ICMPScanner::ICMPScanner(v2::RawSocket::Ptr socket)
+IcmpScanner::IcmpScanner(v2::RawSocket::Ptr socket)
     : IAsyncScanner(socket)
     , m_socket(socket)
 {
     m_socket->attachFilter(IcmpFilter());
 }
 
-util::Result<ICMPResponse, IcmpError> ICMPScanner::ping(const IPv4Address& host)
+util::Result<IcmpResponse, IcmpError> IcmpScanner::ping(const IPv4Address& host)
 {
     auto fut = pingAsync(host);
     if (fut.wait_for(std::chrono::seconds(5)) == std::future_status::timeout)
@@ -45,20 +46,19 @@ util::Result<ICMPResponse, IcmpError> ICMPScanner::ping(const IPv4Address& host)
         const auto& request = m_pendingRequests[host.asString()];
         m_pendingRequests.erase(host.asString());
         return Error(IcmpError{
-            host,
             request.dstIp,
             ErrorType::TimedOut });
     }
     return fut.get();
 }
 
-std::future<util::Result<ICMPResponse, IcmpError>> net::ICMPScanner::pingAsync(const IPv4Address& host)
+std::future<util::Result<IcmpResponse, IcmpError>> net::IcmpScanner::pingAsync(const IPv4Address& host)
 {
     PacketBuilder packetBuilder;
     packetBuilder
         .addLayer(EthLayerBuilder::create()
                       .withSrcMac("08:00:27:21:f8:3c")
-                      .withDstMac("ff:ff:ff:ff:ff:ff"))
+                      .withDstMac(net::MacAddress::broadcast().asString()))
         .addLayer(IPv4LayerBuilder::create()
                       .withSrcIp("192.168.178.165")
                       .withDstIp(host.asString())
@@ -71,7 +71,7 @@ std::future<util::Result<ICMPResponse, IcmpError>> net::ICMPScanner::pingAsync(c
                       .withPayload("WHAT"));
 
     const auto sentTime = SystemClock::now();
-    if (auto bytesSent = m_socket->sendTo({ "enp0s3" }, packetBuilder.getData()))
+    if (auto bytesSent = m_socket->send(packetBuilder.getData()))
     {
         CORE_INFO("Sent {} bytes to {}", *bytesSent, host);
     }
@@ -84,7 +84,7 @@ std::future<util::Result<ICMPResponse, IcmpError>> net::ICMPScanner::pingAsync(c
     return m_pendingRequests[host.asString()].promise.get_future();
 }
 
-void ICMPScanner::onPacketReceived(const v2::ReceivedPacket& packet)
+void IcmpScanner::onPacketReceived(const v2::ReceivedPacket& packet)
 {
     PacketParser parser({ (uint8_t*)packet.bytes.data(), (size_t)packet.bytes.size() });
     auto* ethLayer = parser.getPacket().getLayerOfType<pcpp::EthLayer>();
@@ -95,7 +95,7 @@ void ICMPScanner::onPacketReceived(const v2::ReceivedPacket& packet)
     if (!ipLayer)
         return;
 
-    ICMPResponse response;
+    IcmpResponse response;
     response.srcIp = ipLayer->getSrcIpAddress();
     response.srcMac = ethLayer->getSourceMac();
 
@@ -117,17 +117,16 @@ void ICMPScanner::onPacketReceived(const v2::ReceivedPacket& packet)
     }
 }
 
-void ICMPScanner::handleTimeouts()
+void IcmpScanner::handleTimeouts()
 {
     const auto now = std::chrono::system_clock::now();
     static auto defaultTimeout = std::chrono::seconds(5);
     for (auto it = m_pendingRequests.begin(); it != m_pendingRequests.end(); /* empty */)
     {
-        auto& [host, req] = *it;
+        auto& [_, req] = *it;
         if (now - req.time >= defaultTimeout)
         {
-            req.promise.set_value(Error<IcmpError>({ IPv4Address::parse(host).value_or(IPv4Address::zero()),
-                                                     req.dstIp,
+            req.promise.set_value(Error<IcmpError>({ req.dstIp,
                                                      ErrorType::TimedOut }));
 
             it = m_pendingRequests.erase(it);
@@ -139,7 +138,7 @@ void ICMPScanner::handleTimeouts()
     }
 }
 
-bool ICMPScanner::hasPendingRequests() const
+bool IcmpScanner::hasPendingRequests() const
 {
     return !m_pendingRequests.empty();
 }

@@ -1,6 +1,8 @@
 #include "IPv4Address.h"
 #include "core/util/ByteOrder.h"
+#include "core/util/Result.h"
 
+#include <IpAddress.h>
 #include <boost/asio/ip/address_v4.hpp>
 #include <boost/system/detail/error_code.hpp>
 #include <cstdint>

@@ -120,8 +120,7 @@ int main(int argc, const char** argv)
                           fmt::localtime(timepoint));
             })
             .withFailureCallback([](const auto& error) {
-                CORE_INFO("'{}' -> '{}' failed",
-                          error.srcIp,
+                CORE_INFO("'{}' failed",
                           error.dstIp);
             }));
 

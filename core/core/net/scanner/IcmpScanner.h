@@ -21,7 +21,7 @@
 namespace net
 {
 
-struct ICMPResponse
+struct IcmpResponse
 {
     IPv4Address srcIp;
     IPv4Address dstIp;
@@ -35,12 +35,11 @@ struct ICMPResponse
 
 struct IcmpError
 {
-    IPv4Address srcIp;
     IPv4Address dstIp;
     ErrorType error;
 };
 
-class ICMPScanner : public IAsyncScanner<v2::IcmpProtocol, ICMPResponse, IcmpError>
+class IcmpScanner : public IAsyncScanner<IcmpResponse, IcmpError>
 {
     v2::RawSocket::Ptr m_socket;
     // v2::RawSocket::Ptr m_rawSocket;
@@ -49,16 +48,16 @@ class ICMPScanner : public IAsyncScanner<v2::IcmpProtocol, ICMPResponse, IcmpErr
     struct Request
     {
         IPv4Address dstIp;
-        std::promise<util::Result<ICMPResponse, IcmpError>> promise;
+        std::promise<util::Result<IcmpResponse, IcmpError>> promise;
         TimePoint time;
     };
     std::map<std::string, Request> m_pendingRequests;
 
   public:
-    ICMPScanner(v2::RawSocket::Ptr socket);
+    IcmpScanner(v2::RawSocket::Ptr socket);
 
-    util::Result<ICMPResponse, IcmpError> ping(const IPv4Address& host) override;
-    std::future<util::Result<ICMPResponse, IcmpError>> pingAsync(const IPv4Address& host) override;
+    util::Result<IcmpResponse, IcmpError> ping(const IPv4Address& host) override;
+    std::future<util::Result<IcmpResponse, IcmpError>> pingAsync(const IPv4Address& host) override;
 
     bool hasPendingRequests() const override;
 

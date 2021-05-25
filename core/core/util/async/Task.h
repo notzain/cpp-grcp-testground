@@ -1,6 +1,7 @@
 #pragma once
 
 #include <boost/asio/io_context.hpp>
+#include <functional>
 #include <memory>
 #include <thread>
 #include <type_traits>
@@ -25,6 +26,23 @@ struct Task
 
     using Continuation = std::variant<RunAgain, RunAgainDelayed, End>;
     virtual Continuation run() = 0;
+};
+
+class OneShotTask : public Task
+{
+    std::function<void()> m_func;
+
+  public:
+    OneShotTask(std::function<void()>&& f)
+        : m_func(std::move(f))
+    {
+    }
+
+    Continuation run() override
+    {
+        m_func();
+        return Task::End{};
+    }
 };
 
 class TaskRunner
@@ -76,5 +94,6 @@ class TaskRunner
 };
 } // namespace util
 
+using util::OneShotTask;
 using util::Task;
 using util::TaskRunner;

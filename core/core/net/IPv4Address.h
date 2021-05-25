@@ -4,7 +4,6 @@
 #include "core/util/ByteOrder.h"
 #include "core/util/Result.h"
 
-#include <IpAddress.h>
 #include <array>
 #include <boost/operators.hpp>
 #include <cstdint>

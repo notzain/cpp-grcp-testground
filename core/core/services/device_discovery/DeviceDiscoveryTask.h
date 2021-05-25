@@ -31,7 +31,6 @@ class DeviceDiscoveryTask
 
     struct TaskError
     {
-        IPv4Address srcIp;
         IPv4Address dstIp;
         TimePoint completedAt;
     };

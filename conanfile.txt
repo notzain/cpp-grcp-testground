@@ -9,6 +9,7 @@ magic_enum/0.7.2
 nlohmann_json/3.9.1
 span-lite/0.9.2
 spdlog/1.8.2
+units/2.3.1
 
 pcapplusplus/20.08@bincrafters/stable
 

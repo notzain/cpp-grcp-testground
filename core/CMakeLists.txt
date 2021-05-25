@@ -7,7 +7,7 @@ add_library(
   core/net/packet/layer/EthLayerBuilder.cpp
   core/net/packet/layer/IcmpLayerBuilder.cpp
   core/net/packet/layer/IPv4LayerBuilder.cpp
-  core/net/scanner/ICMPScanner.cpp
+  core/net/scanner/IcmpScanner.cpp
   core/net/scanner/IScanner.cpp
   core/net/socket/filter/IcmpFilter.cpp
   core/net/socket/filter/PacketFilter.cpp
@@ -37,6 +37,7 @@ target_link_libraries(
          CONAN_PKG::pcapplusplus
          CONAN_PKG::span-lite
          CONAN_PKG::spdlog
+         CONAN_PKG::units
          proto
 )
 

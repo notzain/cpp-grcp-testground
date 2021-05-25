@@ -9,10 +9,17 @@
 #include <memory>
 #include <nonstd/span.hpp>
 #include <optional>
+#include <units.h>
 
 namespace net::v2
 {
-constexpr inline std::size_t MaxBufferSize() { return 1024; };
+
+constexpr inline std::size_t MaxBufferSize()
+{
+    using namespace units::literals;
+    return units::data::byte_t(1_KiB).value();
+};
+
 struct ReceivedPacket
 {
     TimePoint arrival;
@@ -20,7 +27,7 @@ struct ReceivedPacket
 
     ReceivedPacket() = default;
     ReceivedPacket(std::size_t length)
-        : arrival(std::chrono::system_clock::now())
+        : arrival(SystemClock::now())
         , bytes(length)
     {
     }

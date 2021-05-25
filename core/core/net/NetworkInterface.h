@@ -6,23 +6,29 @@
 #include <optional>
 #include <string>
 
+#include "IPv4Address.h"
+#include "MacAddress.h"
 #include "core/util/Result.h"
 
 namespace net
 {
 class NetworkInterface : public std::enable_shared_from_this<NetworkInterface>
 {
-    explicit NetworkInterface(pcpp::PcapLiveDevice* device);
+    pcpp::PcapLiveDevice* device;
 
+    explicit NetworkInterface(pcpp::PcapLiveDevice* device);
     static std::optional<NetworkInterface> m_defaultInterface;
 
   public:
-    static nonstd::expected<NetworkInterface, std::string> byName(std::string_view interfaceName);
-    static nonstd::expected<NetworkInterface, std::string> byIp(std::string_view interfaceIp);
+    static Result<NetworkInterface> byName(std::string_view interfaceName);
+    static Result<NetworkInterface> byIp(std::string_view interfaceIp);
     static std::vector<pcpp::PcapLiveDevice*> availableInterfaces();
-    static util::Result<NetworkInterface> defaultInterface();
+    static Result<NetworkInterface> defaultInterface();
     static void setDefaultInterface(const NetworkInterface& networkInterface);
 
-    pcpp::PcapLiveDevice* device;
+    IPv4Address ipAddress() const;
+    MacAddress macAddress() const;
+
+    Result<IPv4Address> defaultGateway() const;
 };
 } // namespace net

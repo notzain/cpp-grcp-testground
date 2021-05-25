@@ -23,11 +23,11 @@ class IScanner
     virtual ~IScanner() = default;
     virtual Result<ResultType, ErrorType> ping(const IPv4Address& host) = 0;
 
-    virtual void start() = 0;
-    virtual void stop() = 0;
+    virtual void startScanning() = 0;
+    virtual void stopScanning() = 0;
 };
 
-template <typename Protocol, typename ResultType, typename ErrorType>
+template <typename ResultType, typename ErrorType>
 class IAsyncScanner
     : public IScanner<ResultType, ErrorType>
 {
@@ -80,7 +80,7 @@ class IAsyncScanner
 
     virtual std::future<Result<ResultType, ErrorType>> pingAsync(const IPv4Address& host) = 0;
 
-    void start() override
+    void startScanning() override
     {
         m_running.store(true);
 
@@ -89,7 +89,7 @@ class IAsyncScanner
     }
 
     // blocks till task is ended
-    void stop() override
+    void stopScanning() override
     {
         m_running.store(false);
         while (!m_currentTask.expired())

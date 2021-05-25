@@ -7,7 +7,7 @@
 #include <exception>
 namespace net
 {
-void IcmpPingResolver::onCompletion(const Result<ICMPResponse, IcmpError>& icmpResponse)
+void IcmpPingResolver::onCompletion(const Result<IcmpResponse, IcmpError>& icmpResponse)
 {
     if (icmpResponse)
     {
@@ -26,7 +26,6 @@ void IcmpPingResolver::onCompletion(const Result<ICMPResponse, IcmpError>& icmpR
         const auto& error = icmpResponse.error();
         m_discoveryTask->addError(error.dstIp,
                                   { error.dstIp,
-                                    error.srcIp,
                                     SystemClock::now() });
     }
 }
@@ -58,12 +57,12 @@ IcmpDeviceDiscoveryTask::IcmpDeviceDiscoveryTask(v2::RawSocket::Ptr socket)
 
 void IcmpDeviceDiscoveryTask::start()
 {
-    m_icmpScanner.start();
+    m_icmpScanner.startScanning();
 }
 
 void IcmpDeviceDiscoveryTask::stop()
 {
-    m_icmpScanner.stop();
+    m_icmpScanner.stopScanning();
 }
 
 void IcmpDeviceDiscoveryTask::discover(const IPv4Address& host)

@@ -1,4 +1,6 @@
 #include "NetworkInterface.h"
+#include "core/net/MacAddress.h"
+#include "core/util/Result.h"
 #include <PcapLiveDevice.h>
 #include <PcapLiveDeviceList.h>
 
@@ -13,7 +15,7 @@ NetworkInterface::NetworkInterface(pcpp::PcapLiveDevice* device)
 {
 }
 
-nonstd::expected<NetworkInterface, std::string> NetworkInterface::byName(const std::string_view interfaceName)
+Result<NetworkInterface> NetworkInterface::byName(const std::string_view interfaceName)
 {
     if (auto* device = pcpp::PcapLiveDeviceList::getInstance().getPcapLiveDeviceByName(interfaceName.data()))
     {
@@ -21,11 +23,11 @@ nonstd::expected<NetworkInterface, std::string> NetworkInterface::byName(const s
     }
     else
     {
-        return nonstd::make_unexpected(fmt::format("Could not find interface '{}'", interfaceName));
+        return Error(ErrorType::NotFound);
     }
 }
 
-nonstd::expected<NetworkInterface, std::string> NetworkInterface::byIp(const std::string_view interfaceIp)
+Result<NetworkInterface> NetworkInterface::byIp(const std::string_view interfaceIp)
 {
     if (auto* device = pcpp::PcapLiveDeviceList::getInstance().getPcapLiveDeviceByIp(interfaceIp.data()))
     {
@@ -33,7 +35,7 @@ nonstd::expected<NetworkInterface, std::string> NetworkInterface::byIp(const std
     }
     else
     {
-        return nonstd::make_unexpected(fmt::format("Could not find interface '{}'", interfaceIp));
+        return Error(ErrorType::NotFound);
     }
 }
 
@@ -53,5 +55,23 @@ util::Result<NetworkInterface> NetworkInterface::defaultInterface()
 void NetworkInterface::setDefaultInterface(const NetworkInterface& networkInterface)
 {
     m_defaultInterface = networkInterface;
+}
+
+IPv4Address NetworkInterface::ipAddress() const
+{
+    return device->getIPv4Address();
+}
+
+MacAddress NetworkInterface::macAddress() const
+{
+    return device->getMacAddress();
+}
+
+Result<IPv4Address> NetworkInterface::defaultGateway() const
+{
+    auto gateway = IPv4Address(device->getDefaultGateway());
+    if (gateway == IPv4Address::zero())
+        return Error(ErrorType::Unknown);
+    return gateway;
 }
 } // namespace net
