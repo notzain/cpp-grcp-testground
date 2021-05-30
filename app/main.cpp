@@ -8,7 +8,7 @@
 #include <core/net/socket/v2/IcmpSocket.h>
 #include <core/services/device_discovery/DeviceDiscoveryService.h>
 #include <core/services/device_discovery/DeviceDiscoveryTaskBuilder.h>
-#include <core/services/device_discovery/IcmpDeviceDiscoveryTask.h>
+#include <core/services/device_discovery/icmp/IcmpDeviceDiscoveryTask.h>
 #include <core/util/Enum.h>
 #include <core/util/Result.h>
 #include <core/util/Thread.h>
@@ -24,6 +24,10 @@
 #include <string>
 #include <sys/socket.h>
 #include <thread>
+
+#include "MyIcmpDeviceDiscoveryTask.h"
+#include <core/repo/RepositoryRegistry.h>
+#include <core/repo/device/DeviceRepository.h>
 
 const auto usage = R"(GRPC Application.
 Usage: app [options]
@@ -43,6 +47,9 @@ int main(int argc, const char** argv)
     util::Logger::instance().initialize({ "Embedded",
                                           args.at("--log").asString(),
                                           args.at("--verbose").asBool() });
+
+    auto repoRegistry = repo::RepositoryRegistry();
+    auto deviceRepo = *repoRegistry.add<repo::DeviceRepository>();
 
     auto ip = net::IPv4Address::parse("192.168.17.69")
                   .value_or(net::IPv4Address::zero());
@@ -108,8 +115,8 @@ int main(int argc, const char** argv)
     net::DeviceDiscoveryService dds;
     dds.addDiscoveryTask(
         net::DeviceDiscoveryTaskBuilder()
-            .construct<net::IcmpDeviceDiscoveryTask>(net::SocketPool::defaultPool().createRawSocket("enp0s3"))
-            .withSuccessCallback([](const auto& result) {
+            .construct<app::MyIcmpDeviceDiscoveryTask>(net::SocketPool::defaultPool().createRawSocket("enp0s3"), *deviceRepo)
+            .withSuccessCallback([&](const auto& result) {
                 const auto timepoint = std::chrono::system_clock::to_time_t(result.completedAt);
                 CORE_INFO("'{} ({})' -> '{} ({})' in {} arrived on {:%c}",
                           result.srcIp,
@@ -118,6 +125,10 @@ int main(int argc, const char** argv)
                           result.dstMac.value_or(net::MacAddress::zero()),
                           result.responseTime,
                           fmt::localtime(timepoint));
+                if (result.dstMac)
+                {
+                    deviceRepo->create(result.dstMac.value(), std::make_shared<models::Device>(result.dstIp, *result.dstMac));
+                }
             })
             .withFailureCallback([](const auto& error) {
                 CORE_INFO("'{}' failed",
@@ -134,7 +145,7 @@ int main(int argc, const char** argv)
         if (c == 'c')
             dds.clearResults();
         else
-            dds.discover(*net::IPv4Address::parse("192.168.178.1"), *net::IPv4Address::parse("192.168.178.2"));
+            dds.discover(*net::IPv4Address::parse("192.168.178.1"), *net::IPv4Address::parse("192.168.178.100"));
     }
 
     return 0;

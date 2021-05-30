@@ -1,4 +1,6 @@
 #include "IcmpDeviceDiscoveryTask.h"
+#include "core/net/MacAddress.h"
+#include "core/net/NetworkInterface.h"
 #include "core/util/Time.h"
 #include "core/util/async/Task.h"
 #include "core/util/logger/Logger.h"
@@ -46,7 +48,7 @@ void IcmpPingResolver::onException(const std::exception_ptr& e)
 }
 
 IcmpDeviceDiscoveryTask::IcmpDeviceDiscoveryTask(v2::RawSocket::Ptr socket)
-    : m_icmpScanner(std::move(socket))
+    : m_icmpScanner(*NetworkInterface::byName("enp0s3"), std::move(socket))
 {
 }
 
@@ -67,9 +69,19 @@ void IcmpDeviceDiscoveryTask::stop()
 
 void IcmpDeviceDiscoveryTask::discover(const IPv4Address& host)
 {
-    auto resolver = std::make_shared<IcmpPingResolver>(host, this);
-    resolver->setFuture(m_icmpScanner.pingAsync(host));
+    auto resolver = createPingResolver(host, MacAddress::broadcast());
+    postRequest(resolver);
+}
 
+std::shared_ptr<IcmpPingResolver> IcmpDeviceDiscoveryTask::createPingResolver(const IPv4Address& ip, const MacAddress& mac)
+{
+    auto resolver = std::make_shared<IcmpPingResolver>(ip, this);
+    resolver->setFuture(m_icmpScanner.pingAsync(ip, mac));
+    return resolver;
+}
+
+void IcmpDeviceDiscoveryTask::postRequest(std::shared_ptr<IcmpPingResolver> resolver)
+{
     util::TaskRunner::defaultRunner()
         .post(resolver);
 }

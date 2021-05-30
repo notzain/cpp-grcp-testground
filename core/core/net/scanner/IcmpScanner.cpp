@@ -31,8 +31,9 @@
 
 namespace net
 {
-IcmpScanner::IcmpScanner(v2::RawSocket::Ptr socket)
+IcmpScanner::IcmpScanner(NetworkInterface networkInterface, v2::RawSocket::Ptr socket)
     : IAsyncScanner(socket)
+    , m_networkInterface(std::move(networkInterface))
     , m_socket(socket)
 {
     m_socket->attachFilter(IcmpFilter());
@@ -40,7 +41,17 @@ IcmpScanner::IcmpScanner(v2::RawSocket::Ptr socket)
 
 util::Result<IcmpResponse, IcmpError> IcmpScanner::ping(const IPv4Address& host)
 {
-    auto fut = pingAsync(host);
+    return ping(host, MacAddress::broadcast());
+}
+
+std::future<util::Result<IcmpResponse, IcmpError>> net::IcmpScanner::pingAsync(const IPv4Address& host)
+{
+    return pingAsync(host, MacAddress::broadcast());
+}
+
+util::Result<IcmpResponse, IcmpError> IcmpScanner::ping(const IPv4Address& host, const MacAddress& mac)
+{
+    auto fut = pingAsync(host, mac);
     if (fut.wait_for(std::chrono::seconds(5)) == std::future_status::timeout)
     {
         const auto& request = m_pendingRequests[host.asString()];
@@ -52,15 +63,15 @@ util::Result<IcmpResponse, IcmpError> IcmpScanner::ping(const IPv4Address& host)
     return fut.get();
 }
 
-std::future<util::Result<IcmpResponse, IcmpError>> net::IcmpScanner::pingAsync(const IPv4Address& host)
+std::future<util::Result<IcmpResponse, IcmpError>> IcmpScanner::pingAsync(const IPv4Address& host, const MacAddress& mac)
 {
     PacketBuilder packetBuilder;
     packetBuilder
         .addLayer(EthLayerBuilder::create()
-                      .withSrcMac("08:00:27:21:f8:3c")
-                      .withDstMac(net::MacAddress::broadcast().asString()))
+                      .withSrcMac(m_networkInterface.macAddress().asString())
+                      .withDstMac(mac.asString()))
         .addLayer(IPv4LayerBuilder::create()
-                      .withSrcIp("192.168.178.165")
+                      .withSrcIp(m_networkInterface.ipAddress().asString())
                       .withDstIp(host.asString())
                       .withId(htons(2000))
                       .withTimeToLive(64))

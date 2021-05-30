@@ -4,32 +4,32 @@
 
 namespace models
 {
-Device::Device(std::string_view ip, std::string_view mac)
-    : m_ipAddress(ip.data())
-    , m_macAddress(mac.data())
+Device::Device(net::IPv4Address ip, net::MacAddress mac)
+    : m_ipAddress(std::move(ip))
+    , m_macAddress(std::move(mac))
 {
 }
 
-pcpp::IPv4Address Device::ipAddress() const
+net::IPv4Address Device::ipAddress() const
 {
     return m_ipAddress;
 }
 
-pcpp::MacAddress Device::macAddress() const
+net::MacAddress Device::macAddress() const
 {
     return m_macAddress;
 }
 
 std::string Device::format() const
 {
-    return fmt::format("ip: {}, mac: {}", m_ipAddress.toString(), m_macAddress.toString());
+    return fmt::format("ip: {}, mac: {}", m_ipAddress, m_macAddress);
 }
 
 nlohmann::json Device::serialize(nlohmann::json json) const
 {
     json = {
-        { "ipAddress", m_ipAddress.toString() },
-        { "macAddress", m_macAddress.toString() }
+        { "ipAddress", m_ipAddress.asString() },
+        { "macAddress", m_macAddress.asString() }
     };
     return json;
 }

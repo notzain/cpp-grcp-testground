@@ -15,10 +15,11 @@ add_library(
   core/net/socket/v2/IcmpSocket.cpp
   core/net/socket/v2/RawSocket.cpp
   core/net/socket/v2/ReceivingSocket.cpp
+  core/repo/device/DeviceRepository.cpp
   core/services/ArpScanner.cpp
   core/services/device_discovery/DeviceDiscoveryService.cpp
   core/services/device_discovery/DeviceDiscoveryTask.cpp
-  core/services/device_discovery/IcmpDeviceDiscoveryTask.cpp
+  core/services/device_discovery/icmp/IcmpDeviceDiscoveryTask.cpp
   core/traits/serializer/JsonSerializer.cpp
   core/util/async/Task.cpp
   core/util/logger/Logger.cpp

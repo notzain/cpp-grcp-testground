@@ -1,4 +1,4 @@
-add_executable(app main.cpp)
+add_executable(app main.cpp MyIcmpDeviceDiscoveryTask.cpp)
 
 target_include_directories(app PRIVATE ${CMAKE_CURRENT_BINARY_DIR}/generated)
 
@@ -15,9 +15,6 @@ if(NOT MSVC)
   )
 endif()
 
-# find_program(iwyu_path NAMES include-what-you-use iwyu)
-# if(iwyu_path)
-#   set_property(TARGET app PROPERTY CXX_INCLUDE_WHAT_YOU_USE ${iwyu_path})
-# else()
-#   message(FATAL_ERROR "Could not find the program include-what-you-use")
-# endif()
+# find_program(iwyu_path NAMES include-what-you-use iwyu) if(iwyu_path)
+# set_property(TARGET app PROPERTY CXX_INCLUDE_WHAT_YOU_USE ${iwyu_path}) else()
+# message(FATAL_ERROR "Could not find the program include-what-you-use") endif()

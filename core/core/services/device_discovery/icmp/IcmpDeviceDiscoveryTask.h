@@ -1,8 +1,10 @@
 #pragma once
 
-#include "DeviceDiscoveryTask.h"
+#include "core/net/MacAddress.h"
+#include "core/services/device_discovery/DeviceDiscoveryTask.h"
 
 #include "core/net/IPv4Address.h"
+#include "core/net/MacAddress.h"
 #include "core/net/scanner/IcmpScanner.h"
 #include "core/util/async/FutureResolver.h"
 
@@ -38,5 +40,9 @@ class IcmpDeviceDiscoveryTask : public DeviceDiscoveryTask
     void stop() override;
 
     void discover(const IPv4Address& host) override;
+
+  protected:
+    std::shared_ptr<IcmpPingResolver> createPingResolver(const IPv4Address& ip, const MacAddress& mac);
+    void postRequest(std::shared_ptr<IcmpPingResolver> resolver);
 };
 } // namespace net

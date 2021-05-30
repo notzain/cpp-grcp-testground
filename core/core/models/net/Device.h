@@ -1,8 +1,7 @@
 #pragma once
 
-#include <IpAddress.h>
-#include <MacAddress.h>
-
+#include "core/net/IPv4Address.h"
+#include "core/net/MacAddress.h"
 #include "core/traits/Printable.h"
 #include "core/traits/serializer/JsonSerializer.h"
 
@@ -12,15 +11,15 @@ class Device
     : public traits::Printable<Device>
     , public traits::JsonSerializer
 {
-    pcpp::IPv4Address m_ipAddress;
-    pcpp::MacAddress m_macAddress;
+    net::IPv4Address m_ipAddress;
+    net::MacAddress m_macAddress;
 
   public:
-    Device(std::string_view ip, std::string_view mac);
+    Device(net::IPv4Address ip, net::MacAddress mac);
     virtual ~Device() = default;
 
-    pcpp::IPv4Address ipAddress() const;
-    pcpp::MacAddress macAddress() const;
+    net::IPv4Address ipAddress() const;
+    net::MacAddress macAddress() const;
 
     std::string format() const override;
     nlohmann::json serialize(nlohmann::json json = {}) const override;
