@@ -9,9 +9,9 @@ namespace net
 SocketPool::SocketPool()
     : m_ioService()
     , m_serviceKeepAlive(m_ioService)
-    , m_serviceThread([this] {
+    , m_serviceThread(Thread::spawn("SocketPool", [this] {
         m_ioService.run();
-    })
+    }))
 {
 }
 
@@ -22,11 +22,7 @@ SocketPool::~SocketPool()
 
 void SocketPool::shutdown()
 {
-    if (m_serviceThread.joinable())
-    {
-        m_ioService.stop();
-        m_serviceThread.join();
-    }
+    m_ioService.stop();
 }
 
 SocketPool& SocketPool::defaultPool()

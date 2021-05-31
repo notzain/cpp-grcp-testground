@@ -12,7 +12,15 @@ namespace util
 
 TaskRunner::TaskRunner()
     : m_keepAlive(m_ioContext)
-    , m_serviceThread(Thread::spawn("TaskRunner", [this] {
+    , m_serviceThread(Thread::spawn([this] {
+        m_ioContext.run();
+    }))
+{
+}
+
+TaskRunner::TaskRunner(std::string_view name)
+    : m_keepAlive(m_ioContext)
+    , m_serviceThread(Thread::spawn(name, [this] {
         m_ioContext.run();
     }))
 {

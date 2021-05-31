@@ -26,7 +26,7 @@ class Thread : private boost::noncopyable
     template <typename Func>
     [[nodiscard]] static Thread spawn(Func&& f)
     {
-        return Thread(std::move(f));
+        return Thread("", std::move(f));
     }
 
     template <typename Func>

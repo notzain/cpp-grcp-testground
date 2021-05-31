@@ -54,10 +54,11 @@ class TaskRunner
 
   public:
     TaskRunner();
+    TaskRunner(std::string_view name);
 
     static TaskRunner& defaultRunner()
     {
-        static auto instance = TaskRunner();
+        static auto instance = TaskRunner("TaskRunner");
         return instance;
     }
 

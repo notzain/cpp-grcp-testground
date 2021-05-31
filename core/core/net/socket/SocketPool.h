@@ -1,6 +1,7 @@
 #pragma once
 
 #include "ISocketPool.h"
+#include "core/util/Thread.h"
 
 #include <boost/asio.hpp>
 #include <thread>
@@ -13,7 +14,7 @@ class SocketPool
 {
     boost::asio::io_service m_ioService;
     boost::asio::io_service::work m_serviceKeepAlive;
-    std::thread m_serviceThread;
+    Thread m_serviceThread;
 
   public:
     static SocketPool& defaultPool();

@@ -78,11 +78,11 @@ void Logger::initialize(Options options)
                             switch (options.sourceStyle)
                             {
                             case Logger::Options::SourceStyle::BaseFile: {
-                                return "[%t | %s:%# - %!]\n";
+                                return "[%t | %s:%# - %!] ";
                             }
                             break;
                             case Logger::Options::SourceStyle::RelativePath: {
-                                return "[%t | %g:%# - %!]\n";
+                                return "[%t | %g:%# - %!] ";
                             }
                             break;
                             }
