@@ -29,6 +29,7 @@ class IPv4Address
     // Allow conversion from pcpp
     IPv4Address(const pcpp::IPv4Address& ip);
     IPv4Address() = default;
+
     static Result<IPv4Address> parse(std::array<std::uint8_t, 4> bytes, ByteOrder::Value byteOrder = ByteOrder::HostOrder);
     static Result<IPv4Address> parse(std::initializer_list<std::uint8_t> bytes, ByteOrder::Value byteOrder = ByteOrder::HostOrder);
     static Result<IPv4Address> parse(nonstd::span<std::uint8_t> bytes, ByteOrder::Value byteOrder = ByteOrder::HostOrder);
@@ -40,6 +41,8 @@ class IPv4Address
     static const IPv4Address& loopback();
 
     bool isBetween(const IPv4Address& begin, const IPv4Address& end) const;
+    bool isZero() const;
+    bool isBroadcast() const;
     bool isLoopback() const;
 
     std::string asString() const;
@@ -58,12 +61,7 @@ class IPv4Address
     bool operator==(std::string_view other) const { return asString() == other; }
     bool operator!=(std::string_view other) const { return !(*this == other); }
 
-    IPv4Address operator++(int)
-    {
-        auto prev = *this;
-        m_ipAsBytes = IPv4Address::parse(this->asInt() + 1)->m_ipAsBytes;
-        return prev;
-    }
+    IPv4Address operator++(int);
 
   private:
     IPv4Address(std::array<std::uint8_t, 4> bytes);

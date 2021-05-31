@@ -6,6 +6,7 @@
 #include "core/repo/Repository.h"
 #include "core/util/IterResult.h"
 #include "core/util/Result.h"
+#include "core/util/Synchronized.h"
 
 #include <algorithm>
 #include <map>
@@ -16,7 +17,7 @@ namespace repo
 class DeviceRepository : public Repository<std::shared_ptr<models::Device>, net::MacAddress>
 {
     using DevicePtr = std::shared_ptr<models::Device>;
-    std::map<net::MacAddress, DevicePtr> m_devices;
+    Synchronized<std::map<net::MacAddress, DevicePtr>> m_devices;
 
   public:
     using Ptr = std::shared_ptr<DeviceRepository>;
@@ -30,12 +31,12 @@ class DeviceRepository : public Repository<std::shared_ptr<models::Device>, net:
     bool has(const net::MacAddress& mac) const override;
 
     Result<DevicePtr> find(const net::IPv4Address& ip) const;
-    Result<DevicePtr> find(const net::MacAddress& mac) const;
-
+    
     template <typename Func>
     Result<DevicePtr> findBy(Func&& func) const
     {
-        for (const auto& [_, device] : m_devices)
+        auto devices = m_devices.synchronize();
+        for (const auto& [_, device] : *devices)
         {
             if (func(*device))
                 return device;
@@ -46,7 +47,8 @@ class DeviceRepository : public Repository<std::shared_ptr<models::Device>, net:
     template <typename Func>
     void iterate(Func&& func)
     {
-        for (auto& [_, device] : m_devices)
+        auto devices = m_devices.synchronize();
+        for (const auto& [_, device] : *devices)
         {
             if (func(*device) == IterResult::Break)
                 break;
@@ -56,7 +58,8 @@ class DeviceRepository : public Repository<std::shared_ptr<models::Device>, net:
     template <typename Func>
     bool contains(Func&& func) const
     {
-        return std::any_of(m_devices.begin(), m_devices.end(), [&func](const auto& it) { return func(*it->second); });
+        auto devices = m_devices.synchronize();
+        return std::any_of(devices->begin(), devices->end(), [&func](const auto& it) { return func(*it->second); });
     }
 };
 } // namespace repo

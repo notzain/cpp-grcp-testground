@@ -25,6 +25,7 @@ class MacAddress : public traits::Printable<MacAddress>
   public:
     MacAddress(const pcpp::MacAddress& mac);
     MacAddress() = default;
+
     static Result<MacAddress> parse(std::array<std::uint8_t, 6> bytes, ByteOrder::Value byteOrder = ByteOrder::HostOrder);
     static Result<MacAddress> parse(std::initializer_list<std::uint8_t> bytes, ByteOrder::Value byteOrder = ByteOrder::HostOrder);
     static Result<MacAddress> parse(nonstd::span<std::uint8_t> bytes, ByteOrder::Value byteOrder = ByteOrder::HostOrder);
@@ -53,12 +54,7 @@ class MacAddress : public traits::Printable<MacAddress>
     bool operator==(std::string_view other) const { return asString() == other; }
     bool operator!=(std::string_view other) const { return !(*this == other); }
 
-    MacAddress operator++(int)
-    {
-        auto prev = *this;
-        m_macAsBytes = MacAddress::parse(this->asInt() + 1)->m_macAsBytes;
-        return prev;
-    }
+    MacAddress operator++(int);
 
   private:
     MacAddress(std::array<std::uint8_t, 6> bytes);

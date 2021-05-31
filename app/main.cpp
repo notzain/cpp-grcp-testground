@@ -1,4 +1,3 @@
-#include "core/util/Sequence.h"
 #include <backward.hpp>
 #include <chrono>
 #include <core/models/net/Device.h>
@@ -11,6 +10,7 @@
 #include <core/services/device_discovery/icmp/IcmpDeviceDiscoveryTask.h>
 #include <core/util/Enum.h>
 #include <core/util/Result.h>
+#include <core/util/Sequence.h>
 #include <core/util/Thread.h>
 #include <core/util/async/TaskContext.h>
 #include <core/util/logger/Logger.h>
@@ -49,7 +49,9 @@ int main(int argc, const char** argv)
                                           args.at("--verbose").asBool() });
 
     auto repoRegistry = repo::RepositoryRegistry();
-    auto deviceRepo = *repoRegistry.add<repo::DeviceRepository>();
+
+    auto deviceRepositoryOrError = repoRegistry.registerRepository<repo::DeviceRepository>();
+    auto deviceRepo = *deviceRepositoryOrError;
 
     auto ip = net::IPv4Address::parse("192.168.17.69")
                   .value_or(net::IPv4Address::zero());

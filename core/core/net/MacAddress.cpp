@@ -134,4 +134,11 @@ std::string MacAddress::format() const
     return asString();
 }
 
+MacAddress MacAddress::operator++(int)
+{
+    auto prev = *this;
+    m_macAsBytes = MacAddress::parse(this->asInt() + 1)->m_macAsBytes;
+    return prev;
+}
+
 } // namespace net

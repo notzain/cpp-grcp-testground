@@ -102,6 +102,16 @@ bool IPv4Address::isBetween(const IPv4Address& begin, const IPv4Address& end) co
     return *this > begin && *this < end;
 }
 
+bool IPv4Address::isZero() const
+{
+    return *this == zero();
+}
+
+bool IPv4Address::isBroadcast() const
+{
+    return *this == broadcast();
+}
+
 bool IPv4Address::isLoopback() const
 {
     return *this == loopback();
@@ -133,5 +143,12 @@ std::uint32_t IPv4Address::asInt() const
 std::string IPv4Address::format() const
 {
     return asString();
+}
+
+IPv4Address IPv4Address::operator++(int)
+{
+    auto prev = *this;
+    m_ipAsBytes = IPv4Address::parse(this->asInt() + 1)->m_ipAsBytes;
+    return prev;
 }
 } // namespace net

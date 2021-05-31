@@ -39,9 +39,12 @@ Result<NetworkInterface> NetworkInterface::byIp(const std::string_view interface
     }
 }
 
-std::vector<pcpp::PcapLiveDevice*> NetworkInterface::availableInterfaces()
+std::vector<NetworkInterface> NetworkInterface::availableInterfaces()
 {
-    return pcpp::PcapLiveDeviceList::getInstance().getPcapLiveDevicesList();
+    std::vector<NetworkInterface> interfaces;
+    for (auto* device : pcpp::PcapLiveDeviceList::getInstance().getPcapLiveDevicesList())
+        interfaces.push_back(device);
+    return interfaces;
 }
 
 util::Result<NetworkInterface> NetworkInterface::defaultInterface()
