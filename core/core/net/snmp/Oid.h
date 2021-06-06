@@ -32,10 +32,17 @@ class Oid : public traits::Printable<Oid>
     Snmp_pp::Oid m_oid;
 
     template <Type T, typename V>
-    struct Value
+    struct Value : public traits::Printable<Value<T, V>>
     {
-        static const Type type = T;
+        Type type = T;
         V value;
+
+        Value(V val)
+            : value(std::move(val))
+        {
+        }
+
+        std::string format() const override { return fmt::format("{} ({})", value, type); };
     };
 
   public:

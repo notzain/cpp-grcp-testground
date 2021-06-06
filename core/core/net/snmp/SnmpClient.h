@@ -4,6 +4,7 @@
 #include "VarBind.h"
 #include "core/net/IPv4Address.h"
 #include "core/util/Result.h"
+#include "core/util/Uuid.h"
 
 #include <future>
 #include <memory>
@@ -14,7 +15,7 @@ namespace net
 {
 class SnmpTarget;
 
-class SnmpResponse
+struct SnmpResponse
 {
     IPv4Address host;
     std::vector<VarBind> variables;
@@ -23,6 +24,15 @@ class SnmpResponse
 class SnmpClient
 {
     std::unique_ptr<Snmp_pp::Snmp> m_snmp;
+
+    struct SnmpRequest
+    {
+        Uuid uuid = Uuid::nil();
+        IPv4Address host;
+        std::promise<Result<SnmpResponse>> promise;
+        SnmpClient* self;
+    };
+    std::map<Uuid, SnmpRequest> m_pendingRequests;
 
   public:
     using Ptr = std::shared_ptr<SnmpClient>;

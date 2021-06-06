@@ -24,7 +24,7 @@ class SnmpTarget
         : m_target(std::move(target))
         , m_version(version)
         , m_timeout(Seconds(5))
-        , m_retries(3)
+        , m_retries(0)
     {
     }
 
@@ -69,7 +69,7 @@ class CommunityTarget : public SnmpTarget
     {
         auto snmpTarget = std::make_unique<Snmp_pp::CTarget>(Snmp_pp::IpAddress(target().asString().data()), m_readCommunity.data(), m_writeCommunity.data());
         snmpTarget->set_retry(retries());
-        snmpTarget->set_timeout(timeout().count());
+        snmpTarget->set_timeout(timeout().count() / 10);
         snmpTarget->set_version((Snmp_pp::snmp_version)version());
 
         return snmpTarget;

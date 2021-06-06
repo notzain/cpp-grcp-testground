@@ -57,13 +57,38 @@ int main(int argc, char** argv)
     {
         auto snmp = snmpOrError.value();
         auto oid = *net::Oid::parse("1.3.6.1.2.1.1.5.0");
-        auto target = net::CommunityTarget::createV1(net::IPv4Address::localhost());
-        snmp->get(oid, target);
+        {
+            auto target = net::CommunityTarget::createV1(net::IPv4Address::localhost());
+            auto response = snmp->getAsync(oid, target).get();
+            if (response)
+            {
+                for (const auto& value : response->variables)
+                {
+                    CORE_INFO("{} - {}", response->host, value);
+                }
+            }
+        }
+
+        {
+            auto target = net::CommunityTarget::createV1(*net::IPv4Address::parse("192.168.178.2"));
+            auto response = snmp->getAsync(oid, target).get();
+            if (response)
+            {
+                for (const auto& value : response->variables)
+                {
+                    CORE_INFO("{} - {}", response->host, value);
+                }
+            }
+            else
+            {
+                CORE_WARN(response.error());
+            }
+        }
     }
 
-    std::this_thread::sleep_for(Seconds(10));
+    std::this_thread::sleep_for(Seconds(30));
 
-    return snmp_test(argc, argv);
+    return 0;
 
     auto repoRegistry = repo::RepositoryRegistry();
 
