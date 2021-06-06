@@ -9,6 +9,9 @@ add_library(
   core/net/packet/layer/IPv4LayerBuilder.cpp
   core/net/scanner/IcmpScanner.cpp
   core/net/scanner/IScanner.cpp
+  core/net/snmp/Oid.cpp
+  core/net/snmp/SnmpClient.cpp
+  core/net/snmp/SnmpTarget.cpp
   core/net/socket/filter/IcmpFilter.cpp
   core/net/socket/filter/PacketFilter.cpp
   core/net/socket/SocketPool.cpp
@@ -28,6 +31,7 @@ add_library(
 )
 
 target_include_directories(core PUBLIC .)
+target_link_directories(core PUBLIC /usr/local/lib/)
 
 target_link_libraries(
   core
@@ -39,6 +43,7 @@ target_link_libraries(
          CONAN_PKG::span-lite
          CONAN_PKG::spdlog
          CONAN_PKG::units
+         snmp++
          proto
 )
 

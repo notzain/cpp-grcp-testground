@@ -95,6 +95,11 @@ const IPv4Address& IPv4Address::loopback()
     return loopback;
 }
 
+const IPv4Address& IPv4Address::localhost()
+{
+    return loopback();
+}
+
 bool IPv4Address::isBetween(const IPv4Address& begin, const IPv4Address& end) const
 {
     if (begin > end)
@@ -115,6 +120,11 @@ bool IPv4Address::isBroadcast() const
 bool IPv4Address::isLoopback() const
 {
     return *this == loopback();
+}
+
+bool IPv4Address::isLocalhost() const
+{
+    return isLoopback();
 }
 
 std::string IPv4Address::asString() const

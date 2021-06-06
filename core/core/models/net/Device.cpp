@@ -20,6 +20,16 @@ net::MacAddress Device::macAddress() const
     return m_macAddress;
 }
 
+Milliseconds Device::responseTime() const
+{
+    return m_responseTime;
+}
+
+void Device::setResponseTime(const Milliseconds& ms)
+{
+    m_responseTime = ms;
+}
+
 std::string Device::format() const
 {
     return fmt::format("ip: {}, mac: {}", m_ipAddress, m_macAddress);
@@ -27,10 +37,9 @@ std::string Device::format() const
 
 nlohmann::json Device::serialize(nlohmann::json json) const
 {
-    json = {
-        { "ipAddress", m_ipAddress.asString() },
-        { "macAddress", m_macAddress.asString() }
-    };
+    json["ipAddress"] = m_ipAddress.asString();
+    json["macAddress"] = m_macAddress.asString();
+    json["responseTime"] = m_responseTime.count();
     return json;
 }
 } // namespace models

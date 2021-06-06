@@ -39,11 +39,13 @@ class IPv4Address
     static const IPv4Address& zero();
     static const IPv4Address& broadcast();
     static const IPv4Address& loopback();
+    static const IPv4Address& localhost();
 
     bool isBetween(const IPv4Address& begin, const IPv4Address& end) const;
     bool isZero() const;
     bool isBroadcast() const;
     bool isLoopback() const;
+    bool isLocalhost() const;
 
     std::string asString() const;
     std::array<std::uint8_t, 4> asBytes(ByteOrder::Value byteOrder = ByteOrder::HostOrder) const;

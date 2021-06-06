@@ -3,8 +3,13 @@
 #include <core/models/net/Device.h>
 #include <core/net/IPv4Address.h>
 #include <core/net/MacAddress.h>
+#include <core/net/snmp/SnmpClient.h>
+#include <core/net/snmp/SnmpTarget.h>
+#include <core/net/snmp/SnmpTest.h>
 #include <core/net/socket/SocketPool.h>
 #include <core/net/socket/v2/IcmpSocket.h>
+#include <core/repo/RepositoryRegistry.h>
+#include <core/repo/device/DeviceRepository.h>
 #include <core/services/device_discovery/DeviceDiscoveryService.h>
 #include <core/services/device_discovery/DeviceDiscoveryTaskBuilder.h>
 #include <core/services/device_discovery/icmp/IcmpDeviceDiscoveryTask.h>
@@ -26,8 +31,7 @@
 #include <thread>
 
 #include "MyIcmpDeviceDiscoveryTask.h"
-#include <core/repo/RepositoryRegistry.h>
-#include <core/repo/device/DeviceRepository.h>
+#include "core/net/snmp/Oid.h"
 
 const auto usage = R"(GRPC Application.
 Usage: app [options]
@@ -39,7 +43,7 @@ Options:
     --verbose                   Set verbose logging
 )";
 
-int main(int argc, const char** argv)
+int main(int argc, char** argv)
 {
     backward::SignalHandling sh;
 
@@ -48,6 +52,19 @@ int main(int argc, const char** argv)
                                           args.at("--log").asString(),
                                           args.at("--verbose").asBool() });
 
+    auto snmpOrError = net::SnmpClient::create();
+    if (snmpOrError)
+    {
+        auto snmp = snmpOrError.value();
+        auto oid = *net::Oid::parse("1.3.6.1.2.1.1.5.0");
+        auto target = net::CommunityTarget::createV1(net::IPv4Address::localhost());
+        snmp->get(oid, target);
+    }
+
+    std::this_thread::sleep_for(Seconds(10));
+
+    return snmp_test(argc, argv);
+
     auto repoRegistry = repo::RepositoryRegistry();
 
     auto deviceRepositoryOrError = repoRegistry.registerRepository<repo::DeviceRepository>();
@@ -55,6 +72,8 @@ int main(int argc, const char** argv)
 
     auto ip = net::IPv4Address::parse("192.168.17.69")
                   .value_or(net::IPv4Address::zero());
+    auto device = models::Device(ip, net::MacAddress::broadcast());
+
     CORE_INFO(ip);
     std::array<std::uint8_t, 4> bytes = { 192, 168, 23, 63 };
     CORE_INFO(net::IPv4Address::parse({ 192, 168, 66, 23 })
@@ -105,6 +124,7 @@ int main(int argc, const char** argv)
     {
         CORE_INFO(ip);
     }
+
     CORE_INFO("{}", fmt::join(util::rangeOf(1, 5), ", "));
     CORE_INFO("{}", fmt::join(util::rangeOf(1, util::Inclusive(5)), ", "));
     CORE_INFO("{}", fmt::join(util::rangeOf(util::Exclusive(1), 5), ", "));
@@ -129,7 +149,19 @@ int main(int argc, const char** argv)
                           fmt::localtime(timepoint));
                 if (result.dstMac)
                 {
-                    deviceRepo->create(result.dstMac.value(), std::make_shared<models::Device>(result.dstIp, *result.dstMac));
+                    if (auto deviceOrError = deviceRepo->read(*result.dstMac))
+                    {
+                        auto device = deviceOrError.value();
+                        device->setResponseTime(result.responseTime);
+                        CORE_INFO("{}", device->serialize().dump());
+                    }
+                    else
+                    {
+                        auto device = std::make_shared<models::Device>(result.dstIp, *result.dstMac);
+                        device->setResponseTime(result.responseTime);
+                        CORE_INFO("{}", device->serialize().dump());
+                        deviceRepo->create(*result.dstMac, std::move(device));
+                    }
                 }
             })
             .withFailureCallback([](const auto& error) {
