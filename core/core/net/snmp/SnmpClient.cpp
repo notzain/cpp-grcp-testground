@@ -38,29 +38,11 @@ SnmpClient::~SnmpClient() { m_snmp->stop_poll_thread(); }
 
 Result<SnmpResponse> SnmpClient::get(nonstd::span<const Oid> oids, const SnmpTarget& target)
 {
-    Snmp_pp::Pdu pdu;
-    for (const auto& oid : oids)
-    {
-        Snmp_pp::Vb vb;
-        vb.set_oid(oid.asDottedString().data());
-        pdu += vb;
-    }
-
-    auto snmpTarget = target.toTarget({});
-    int status = m_snmp->get(pdu, *snmpTarget);
-
-    for (int i = 0; i < pdu.get_vb_count(); i++)
-    {
-        Snmp_pp::Vb vb;
-        pdu.get_vb(vb, i);
-        CORE_INFO("{} : {}", vb.get_printable_oid(), vb.get_printable_value());
-    }
-    return {};
+    return getAsync(oids, target).get();
 }
 
 std::future<Result<SnmpResponse>> SnmpClient::getAsync(nonstd::span<const Oid> oids, const SnmpTarget& target)
 {
-
     Snmp_pp::Pdu pdu;
     for (const auto& oid : oids)
     {
@@ -81,9 +63,7 @@ std::future<Result<SnmpResponse>> SnmpClient::getAsync(nonstd::span<const Oid> o
 void SnmpClient::callback(int reason, Snmp_pp::Snmp* snmp, Snmp_pp::Pdu& pdu, Snmp_pp::SnmpTarget& target, void* requestPtr)
 {
     auto* request = static_cast<SnmpRequest*>(requestPtr);
-    auto* self = request->self;
-
-    defer(self->m_pendingRequests.erase(request->uuid));
+    defer(request->self->m_pendingRequests.erase(request->uuid));
 
     if (reason == SNMP_CLASS_ASYNC_RESPONSE)
     {
@@ -100,7 +80,7 @@ void SnmpClient::callback(int reason, Snmp_pp::Snmp* snmp, Snmp_pp::Pdu& pdu, Sn
     }
     else if (reason == SNMP_CLASS_TIMEOUT)
     {
-        CORE_INFO("Timed out {}", request->host);
+        request->promise.set_value(Error(ErrorType::TimedOut));
     }
     else
     {

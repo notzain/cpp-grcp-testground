@@ -31,7 +31,6 @@ add_library(
 )
 
 target_include_directories(core PUBLIC .)
-target_link_directories(core PUBLIC /usr/local/lib/)
 
 target_link_libraries(
   core
@@ -43,7 +42,7 @@ target_link_libraries(
          CONAN_PKG::span-lite
          CONAN_PKG::spdlog
          CONAN_PKG::units
-         snmp++
+         CONAN_PKG::snmppp
          proto
 )
 
