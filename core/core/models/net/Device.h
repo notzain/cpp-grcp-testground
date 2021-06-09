@@ -26,7 +26,7 @@ class Device
     Milliseconds responseTime() const;
     void setResponseTime(const Milliseconds& ms);
 
-    std::string format() const override;
+    std::string toString() const override;
     nlohmann::json serialize(nlohmann::json json = {}) const override;
 };
 } // namespace models

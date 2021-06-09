@@ -2,6 +2,7 @@
 
 #include "Oid.h"
 #include "core/util/helper/Variant.h"
+#include <fmt/format.h>
 #include <optional>
 
 namespace net
@@ -28,7 +29,7 @@ class VarBind : public traits::Printable<VarBind>
     const std::optional<OidValue>& value() const { return m_value; }
     void setValue(OidValue value) { m_value = value; }
 
-    std::string format() const override
+    std::string toString() const override
     {
         if (m_value)
         {

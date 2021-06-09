@@ -58,7 +58,7 @@ template <typename T>
 struct MapPrinter : public traits::Printer<T>
 {
     using traits::Printer<T>::Printer;
-    std::string format() const override
+    std::string toString() const override
     {
         std::stringstream ss;
         const auto last = std::prev(this->m_type.end());

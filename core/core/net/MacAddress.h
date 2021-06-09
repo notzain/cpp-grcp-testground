@@ -42,7 +42,7 @@ class MacAddress : public traits::Printable<MacAddress>
     std::array<std::uint8_t, 6> asBytes(ByteOrder::Value byteOrder = ByteOrder::HostOrder) const;
     std::uint64_t asInt() const;
 
-    std::string format() const override;
+    std::string toString() const override;
 
     bool operator==(const MacAddress& other) const { return m_macAsBytes == other.m_macAsBytes; }
     bool operator!=(const MacAddress& other) const { return !(*this == other); }

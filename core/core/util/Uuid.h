@@ -32,7 +32,7 @@ class Uuid : public traits::Printable<Uuid>
         return uuid_hasher(m_uuid);
     }
 
-    std::string format() const override
+    std::string toString() const override
     {
         return boost::uuids::to_string(m_uuid);
     }

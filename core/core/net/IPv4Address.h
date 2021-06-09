@@ -51,7 +51,7 @@ class IPv4Address
     std::array<std::uint8_t, 4> asBytes(ByteOrder::Value byteOrder = ByteOrder::HostOrder) const;
     std::uint32_t asInt() const;
 
-    std::string format() const override;
+    std::string toString() const override;
 
     bool operator==(const IPv4Address& other) const { return m_ipAsBytes == other.m_ipAsBytes; }
     bool operator!=(const IPv4Address& other) const { return !(*this == other); }

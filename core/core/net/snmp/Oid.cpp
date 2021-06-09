@@ -46,7 +46,7 @@ std::string_view Oid::asDottedString() const
     return m_oid.get_printable();
 }
 
-std::string Oid::format() const
+std::string Oid::toString() const
 {
     return m_oid.get_printable();
 }

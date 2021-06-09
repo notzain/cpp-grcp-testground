@@ -42,7 +42,7 @@ class Oid : public traits::Printable<Oid>
         {
         }
 
-        std::string format() const override { return fmt::format("{} ({})", value, type); };
+        std::string toString() const override { return fmt::format("{} ({})", value, type); };
     };
 
   public:
@@ -55,7 +55,7 @@ class Oid : public traits::Printable<Oid>
     static const Oid& sysLocation();
 
     std::string_view asDottedString() const;
-    std::string format() const override;
+    std::string toString() const override;
 
     bool operator==(const Oid& other) const { return m_oid == other.m_oid; }
     bool operator!=(const Oid& other) const { return !(*this == other); }

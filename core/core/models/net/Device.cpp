@@ -30,7 +30,7 @@ void Device::setResponseTime(const Milliseconds& ms)
     m_responseTime = ms;
 }
 
-std::string Device::format() const
+std::string Device::toString() const
 {
     return fmt::format("ip: {}, mac: {}", m_ipAddress, m_macAddress);
 }

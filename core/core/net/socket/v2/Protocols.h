@@ -28,7 +28,7 @@ struct IcmpProtocol
         {
         }
 
-        std::string format() const override
+        std::string toString() const override
         {
             return fmt::format("['{}', '{}']", ipAddress, port);
         }
@@ -51,7 +51,7 @@ struct RawProtocol
         {
         }
 
-        std::string format() const override
+        std::string toString() const override
         {
             return fmt::format("['{}']", interface);
         }
@@ -71,7 +71,7 @@ struct RawProtocol
             sockAddr.sll_hatype = 1;
         }
 
-        std::string format() const override
+        std::string toString() const override
         {
             return fmt::format("['{}']", interface);
         }

@@ -129,11 +129,7 @@ bool IPv4Address::isLocalhost() const
 
 std::string IPv4Address::asString() const
 {
-    return fmt::format("{}.{}.{}.{}",
-                       m_ipAsBytes[3],
-                       m_ipAsBytes[2],
-                       m_ipAsBytes[1],
-                       m_ipAsBytes[0]);
+    return fmt::format("{}", fmt::join(m_ipAsBytes.rbegin(), m_ipAsBytes.rend(), "."));
 }
 
 std::array<std::uint8_t, 4> IPv4Address::asBytes(ByteOrder::Value byteOrder) const
@@ -150,7 +146,7 @@ std::uint32_t IPv4Address::asInt() const
     return addr;
 }
 
-std::string IPv4Address::format() const
+std::string IPv4Address::toString() const
 {
     return asString();
 }

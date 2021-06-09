@@ -14,7 +14,7 @@ class ArpScanner
 
     nlohmann::json serialize(nlohmann::json json = {}) const override;
 
-    std::string format() const override
+    std::string toString() const override
     {
         return serialize().dump();
     }

@@ -106,13 +106,7 @@ bool MacAddress::isBroadcast(const MacAddress& mac) const
 
 std::string MacAddress::asString() const
 {
-    return fmt::format("{:02X}:{:02X}:{:02X}:{:02X}:{:02X}:{:02X}",
-                       m_macAsBytes[5],
-                       m_macAsBytes[4],
-                       m_macAsBytes[3],
-                       m_macAsBytes[2],
-                       m_macAsBytes[1],
-                       m_macAsBytes[0]);
+    return fmt::format("{:02X}", fmt::join(m_macAsBytes.rbegin(), m_macAsBytes.rend(), ":"));
 }
 
 std::array<std::uint8_t, 6> MacAddress::asBytes(ByteOrder::Value byteOrder) const
@@ -129,7 +123,7 @@ std::uint64_t MacAddress::asInt() const
     return addr;
 }
 
-std::string MacAddress::format() const
+std::string MacAddress::toString() const
 {
     return asString();
 }
