@@ -43,12 +43,18 @@ class SnmpClient
 
     Result<SnmpResponse> get(const Oid& oid, const SnmpTarget& target) { return get({ &oid, 1 }, target); };
     Result<SnmpResponse> get(nonstd::span<const Oid> oids, const SnmpTarget& target);
-
     std::future<Result<SnmpResponse>> getAsync(const Oid& oid, const SnmpTarget& target) { return getAsync({ &oid, 1 }, target); };
     std::future<Result<SnmpResponse>> getAsync(nonstd::span<const Oid> oids, const SnmpTarget& target);
 
+    Result<SnmpResponse> getBulk(const Oid& oid, const SnmpTarget& target, int nonRepeaters, int maxReps) { return getBulk({ &oid, 1 }, target, nonRepeaters, maxReps); };
+    Result<SnmpResponse> getBulk(nonstd::span<const Oid> oids, const SnmpTarget& target, int nonRepeaters, int maxReps);
+    std::future<Result<SnmpResponse>> getBulkAsync(const Oid& oid, const SnmpTarget& target, int nonRepeaters, int maxReps) { return getBulkAsync({ &oid, 1 }, target, nonRepeaters, maxReps); };
+    std::future<Result<SnmpResponse>> getBulkAsync(nonstd::span<const Oid> oids, const SnmpTarget& target, int nonRepeaters, int maxReps);
+
   private:
     SnmpClient(std::unique_ptr<Snmp_pp::Snmp> snmp);
+
+    SnmpRequest& createRequest(const SnmpTarget& target);
 
     static void callback(int reason, Snmp_pp::Snmp* snmp, Snmp_pp::Pdu& pdu, Snmp_pp::SnmpTarget& target, void* cd);
 };

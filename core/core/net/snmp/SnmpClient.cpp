@@ -13,6 +13,7 @@
 #include <snmp_pp/vb.h>
 namespace net
 {
+static Snmp_pp::Pdu createPdu(nonstd::span<const Oid> oids);
 static OidValue toOidValue(const Snmp_pp::Vb& vb);
 
 Result<SnmpClient::Ptr> SnmpClient::create(std::size_t port)
@@ -43,20 +44,26 @@ Result<SnmpResponse> SnmpClient::get(nonstd::span<const Oid> oids, const SnmpTar
 
 std::future<Result<SnmpResponse>> SnmpClient::getAsync(nonstd::span<const Oid> oids, const SnmpTarget& target)
 {
-    Snmp_pp::Pdu pdu;
-    for (const auto& oid : oids)
-    {
-        Snmp_pp::Vb vb;
-        vb.set_oid(oid.asDottedString().data());
-        pdu += vb;
-    }
-
-    const auto uuid = Uuid::generate();
-    m_pendingRequests[uuid] = SnmpRequest{ uuid, target.target(), {}, this };
-    auto& request = m_pendingRequests[uuid];
+    auto pdu = createPdu(oids);
+    auto& request = createRequest(target);
 
     auto snmpTarget = target.toTarget({});
     m_snmp->get(pdu, *snmpTarget, callback, &request);
+    return request.promise.get_future();
+}
+
+Result<SnmpResponse> SnmpClient::getBulk(nonstd::span<const Oid> oids, const SnmpTarget& target, int nonRepeaters, int maxReps)
+{
+    return getBulkAsync(oids, target, nonRepeaters, maxReps).get();
+}
+
+std::future<Result<SnmpResponse>> SnmpClient::getBulkAsync(nonstd::span<const Oid> oids, const SnmpTarget& target, int nonRepeaters, int maxReps)
+{
+    auto pdu = createPdu(oids);
+    auto& request = createRequest(target);
+
+    auto snmpTarget = target.toTarget({});
+    m_snmp->get_bulk(pdu, *snmpTarget, nonRepeaters, maxReps, callback, &request);
     return request.promise.get_future();
 }
 
@@ -74,7 +81,9 @@ void SnmpClient::callback(int reason, Snmp_pp::Snmp* snmp, Snmp_pp::Pdu& pdu, Sn
         for (int i = 0; i < pdu.get_vb_count(); i++)
         {
             pdu.get_vb(nextVb, i);
-            response.variables.push_back({ *Oid::parse(nextVb.get_printable_oid()), toOidValue(nextVb) });
+            if (nextVb.valid())
+                response.variables.push_back({ *Oid::parse(nextVb.get_printable_oid()),
+                                               toOidValue(nextVb) });
         }
         request->promise.set_value(response);
     }
@@ -86,6 +95,25 @@ void SnmpClient::callback(int reason, Snmp_pp::Snmp* snmp, Snmp_pp::Pdu& pdu, Sn
     {
         request->promise.set_value(Error(ErrorType::Unknown));
     }
+}
+
+SnmpClient::SnmpRequest& SnmpClient::createRequest(const SnmpTarget& target)
+{
+    const auto uuid = Uuid::generate();
+    m_pendingRequests[uuid] = SnmpRequest{ uuid, target.ipAddress(), {}, this };
+    return m_pendingRequests[uuid];
+}
+
+Snmp_pp::Pdu createPdu(nonstd::span<const Oid> oids)
+{
+    Snmp_pp::Pdu pdu;
+    for (const auto& oid : oids)
+    {
+        Snmp_pp::Vb vb;
+        vb.set_oid(oid.asDottedString().data());
+        pdu += vb;
+    }
+    return pdu;
 }
 
 OidValue toOidValue(const Snmp_pp::Vb& vb)
@@ -128,7 +156,7 @@ OidValue toOidValue(const Snmp_pp::Vb& vb)
     }
     }
 
-    return Oid::Opaque("");
+    return Oid::Opaque(vb.get_printable_value());
 }
 
 } // namespace net

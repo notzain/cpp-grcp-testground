@@ -13,6 +13,7 @@
 #include <core/services/device_discovery/DeviceDiscoveryService.h>
 #include <core/services/device_discovery/DeviceDiscoveryTaskBuilder.h>
 #include <core/services/device_discovery/icmp/IcmpDeviceDiscoveryTask.h>
+#include <core/services/snmp_service/SnmpService.h>
 #include <core/util/Enum.h>
 #include <core/util/Result.h>
 #include <core/util/Sequence.h>
@@ -32,6 +33,7 @@
 
 #include "MyIcmpDeviceDiscoveryTask.h"
 #include "core/net/snmp/Oid.h"
+#include "core/util/IterResult.h"
 
 const auto usage = R"(GRPC Application.
 Usage: app [options]
@@ -53,6 +55,7 @@ int main(int argc, char** argv)
                                           args.at("--verbose").asBool() });
 
     auto snmp = *net::SnmpClient::create();
+    auto snmpService = service::SnmpService(*snmp);
 
     auto repoRegistry = repo::RepositoryRegistry();
 
@@ -63,6 +66,10 @@ int main(int argc, char** argv)
                   .value_or(net::IPv4Address::zero());
     auto device = models::Device(ip, net::MacAddress::broadcast());
 
+    for (const auto& [type, name] : Enum::entries<net::Oid::Type>())
+    {
+        CORE_INFO("{} {}", type, name);
+    }
     CORE_INFO(ip);
     std::array<std::uint8_t, 4> bytes = { 192, 168, 23, 63 };
     CORE_INFO(net::IPv4Address::parse({ 192, 168, 66, 23 })
@@ -168,27 +175,11 @@ int main(int argc, char** argv)
             dds.clearResults();
         else
         {
-            dds.discover(*net::IPv4Address::parse("192.168.178.1"), *net::IPv4Address::parse("192.168.178.2"));
-            deviceRepo->iterate([&snmp](const models::Device& device) {
-                auto target = net::CommunityTarget::createV1(net::IPv4Address::localhost());
-                std::array oids = {
-                    net::Oid::sysName(),
-                    net::Oid::sysDescr(),
-                    net::Oid::sysUpTime(),
-                };
-
-                if (auto response = snmp->get(oids, target))
-                {
-                    CORE_INFO("{} -> {}", response->host, fmt::join(response->variables, ", "));
-                }
-                else
-
-                {
-                    CORE_INFO("{} -> {}", target.target(), response.error());
-                }
-
-                return IterResult::Continue;
+            deviceRepo->iterate([&snmpService](const models::Device& device) {
+                snmpService.requestSystem(net::IPv4Address::localhost());
+                return util::IterResult::Continue;
             });
+            dds.discover(*net::IPv4Address::parse("192.168.178.1"), *net::IPv4Address::parse("192.168.178.2"));
         }
     }
 

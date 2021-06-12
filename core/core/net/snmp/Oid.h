@@ -16,16 +16,16 @@ class Oid : public traits::Printable<Oid>
   public:
     enum class Type
     {
-        Integer,
-        Integer32 = Integer,
+        Integer32,
         UInteger32,
         OctetString,
         Oid,
-        Counter32 = UInteger32,
         Counter64,
-        Gauge32 = UInteger32,
         TimeTicks,
-        Opaque
+        Opaque,
+        Integer = Integer32,
+        Counter32 = UInteger32,
+        Gauge32 = UInteger32,
     };
 
   private:
@@ -64,16 +64,16 @@ class Oid : public traits::Printable<Oid>
     bool operator<=(const Oid& other) const { return !(other < *this); }
     bool operator>=(const Oid& other) const { return !(*this < other); }
 
-    using Integer = Value<Type::Integer, std::int32_t>;
-    using Integer32 = Integer;
+    using Integer32 = Value<Type::Integer32, std::int32_t>;
     using UInteger32 = Value<Type::UInteger32, std::uint32_t>;
     using OctetString = Value<Type::OctetString, std::string>;
     using OidType = Value<Type::Oid, Oid>;
-    using Counter32 = UInteger32;
     using Counter64 = Value<Type::Counter64, std::uint64_t>;
-    using Gauge32 = UInteger32;
     using TimeTicks = Value<Type::TimeTicks, std::uint32_t>;
     using Opaque = Value<Type::Opaque, std::string>;
+    using Integer = Integer32;
+    using Counter32 = UInteger32;
+    using Gauge32 = UInteger32;
 
   private:
     Oid(Snmp_pp::Oid oid)
@@ -82,7 +82,7 @@ class Oid : public traits::Printable<Oid>
     }
 };
 
-using OidValue = std::variant<Oid::Integer,
+using OidValue = std::variant<Oid::Integer32,
                               Oid::UInteger32,
                               Oid::OctetString,
                               Oid::OidType,
