@@ -18,6 +18,7 @@ class SnmpTarget
     SnmpVersion m_version;
     Milliseconds m_timeout;
     std::size_t m_retries;
+    std::optional<std::size_t> m_port;
 
   public:
     SnmpTarget(SnmpVersion version, IPv4Address target)
@@ -25,6 +26,15 @@ class SnmpTarget
         , m_version(version)
         , m_timeout(Seconds(5))
         , m_retries(0)
+    {
+    }
+
+    SnmpTarget(SnmpVersion version, IPv4Address target, std::size_t port)
+        : m_ipAddress(std::move(target))
+        , m_version(version)
+        , m_timeout(Seconds(5))
+        , m_retries(0)
+        , m_port(port)
     {
     }
 
@@ -39,6 +49,9 @@ class SnmpTarget
 
     std::size_t retries() const { return m_retries; }
     void setRetries(std::size_t retries) { m_retries = retries; }
+
+    std::optional<std::size_t> port() const { return m_port; }
+    void setPort(std::size_t port) { m_port = port; }
 
     virtual std::unique_ptr<Snmp_pp::SnmpTarget> toTarget(Badge<SnmpClient>) const = 0;
 };
@@ -67,7 +80,11 @@ class CommunityTarget : public SnmpTarget
 
     std::unique_ptr<Snmp_pp::SnmpTarget> toTarget(Badge<SnmpClient>) const override
     {
-        auto snmpTarget = std::make_unique<Snmp_pp::CTarget>(Snmp_pp::IpAddress(ipAddress().asString().data()), m_readCommunity.data(), m_writeCommunity.data());
+        auto ip = Snmp_pp::UdpAddress(ipAddress().asString().data());
+        if (port())
+            ip.set_port(port().value());
+
+        auto snmpTarget = std::make_unique<Snmp_pp::CTarget>(ip, m_readCommunity.data(), m_writeCommunity.data());
         snmpTarget->set_retry(retries());
         snmpTarget->set_timeout(timeout().count() / 10);
         snmpTarget->set_version((Snmp_pp::snmp_version)version());

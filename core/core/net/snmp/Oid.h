@@ -48,11 +48,18 @@ class Oid : public traits::Printable<Oid>
   public:
     static Result<Oid> parse(std::string_view oid);
 
-    static const Oid& sysDescr();
-    static const Oid& sysUpTime();
-    static const Oid& sysContact();
-    static const Oid& sysName();
-    static const Oid& sysLocation();
+    // clang-format off
+#define DefineOid(oidName, oidString) static const Oid& oidName() { static Oid oid = *parse(oidString); return oid; }
+  DefineOid(system     , "1.3.6.1.2.1.1");
+  DefineOid(sysDescr   , "1.3.6.1.2.1.1.1.0");
+  DefineOid(sysUpTime  , "1.3.6.1.2.1.1.3.0");
+  DefineOid(sysContact , "1.3.6.1.2.1.1.4.0");
+  DefineOid(sysName    , "1.3.6.1.2.1.1.5.0");
+  DefineOid(sysLocation, "1.3.6.1.2.1.1.6.0");
+
+  DefineOid(ifTable    , "1.3.6.1.2.1.2.2");
+#undef DefineOid
+    // clang-format on
 
     std::string_view asDottedString() const;
     std::string toString() const override;

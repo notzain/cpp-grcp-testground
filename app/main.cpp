@@ -175,11 +175,10 @@ int main(int argc, char** argv)
             dds.clearResults();
         else
         {
-            deviceRepo->iterate([&snmpService](const models::Device& device) {
-                snmpService.requestSystem(net::IPv4Address::localhost());
-                return util::IterResult::Continue;
-            });
-            dds.discover(*net::IPv4Address::parse("192.168.178.1"), *net::IPv4Address::parse("192.168.178.2"));
+            snmpService.requestSystem(net::IPv4Address::localhost(), 1611);
+            // deviceRepo->iterate([&snmpService](const models::Device& device) {
+            // });
+            // dds.discover(*net::IPv4Address::parse("192.168.178.1"), *net::IPv4Address::parse("192.168.178.2"));
         }
     }
 

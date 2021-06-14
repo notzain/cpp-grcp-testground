@@ -7,6 +7,7 @@
 #include <cstdint>
 #include <snmp_pp/address.h>
 #include <snmp_pp/config_snmp_pp.h>
+#include <snmp_pp/oid.h>
 #include <snmp_pp/pdu.h>
 #include <snmp_pp/smi.h>
 #include <snmp_pp/snmperrs.h>
@@ -67,25 +68,53 @@ std::future<Result<SnmpResponse>> SnmpClient::getBulkAsync(nonstd::span<const Oi
     return request.promise.get_future();
 }
 
+Result<SnmpResponse> SnmpClient::walk(const Oid& oid, const SnmpTarget& target)
+{
+    return walkAsync(oid, target).get();
+}
+
+std::future<Result<SnmpResponse>> SnmpClient::walkAsync(const Oid& oid, const SnmpTarget& target)
+{
+    auto pdu = createPdu({ &oid, 1 });
+    auto& request = createRequest(target);
+    request.isWalk = true;
+    request.walkOid = oid;
+
+    auto snmpTarget = target.toTarget({});
+    m_snmp->get_bulk(pdu, *snmpTarget, 0, 10, callback, &request);
+    return request.promise.get_future();
+}
+
 void SnmpClient::callback(int reason, Snmp_pp::Snmp* snmp, Snmp_pp::Pdu& pdu, Snmp_pp::SnmpTarget& target, void* requestPtr)
 {
     auto* request = static_cast<SnmpRequest*>(requestPtr);
-    defer(request->self->m_pendingRequests.erase(request->uuid));
 
+    if (request->isWalk)
+    {
+        handleWalk(reason, snmp, pdu, target, request);
+    }
+    else
+    {
+        handleGet(reason, snmp, pdu, target, request);
+    }
+}
+
+void SnmpClient::handleGet(int reason, Snmp_pp::Snmp* snmp, Snmp_pp::Pdu& pdu, Snmp_pp::SnmpTarget& target, SnmpRequest* request)
+{
+    defer(request->self->m_pendingRequests.erase(request->uuid));
     if (reason == SNMP_CLASS_ASYNC_RESPONSE)
     {
-        SnmpResponse response;
         Snmp_pp::Vb nextVb;
-        response.host = request->host;
 
         for (int i = 0; i < pdu.get_vb_count(); i++)
         {
+            request->response.host = request->host;
             pdu.get_vb(nextVb, i);
             if (nextVb.valid())
-                response.variables.push_back({ *Oid::parse(nextVb.get_printable_oid()),
-                                               toOidValue(nextVb) });
+                request->response.variables.push_back({ *Oid::parse(nextVb.get_printable_oid()),
+                                                        toOidValue(nextVb) });
         }
-        request->promise.set_value(response);
+        request->promise.set_value(request->response);
     }
     else if (reason == SNMP_CLASS_TIMEOUT)
     {
@@ -95,6 +124,45 @@ void SnmpClient::callback(int reason, Snmp_pp::Snmp* snmp, Snmp_pp::Pdu& pdu, Sn
     {
         request->promise.set_value(Error(ErrorType::Unknown));
     }
+}
+
+void SnmpClient::handleWalk(int reason, Snmp_pp::Snmp* snmp, Snmp_pp::Pdu& pdu, Snmp_pp::SnmpTarget& target, SnmpRequest* request)
+{
+    if (reason == SNMP_CLASS_TIMEOUT)
+    {
+        request->promise.set_value(Error(ErrorType::TimedOut));
+        return;
+    }
+
+    Snmp_pp::Oid requestOid(request->walkOid->asDottedString().data());
+
+    Snmp_pp::Vb nextVb;
+    for (int i = 0; i < pdu.get_vb_count(); i++)
+    {
+        pdu.get_vb(nextVb, i);
+
+        Snmp_pp::Oid currentOid;
+        nextVb.get_oid(currentOid);
+
+        if (requestOid.nCompare(requestOid.len(), currentOid) != 0)
+        {
+            request->promise.set_value(request->response);
+            return;
+        }
+
+        if (nextVb.get_syntax() != sNMP_SYNTAX_ENDOFMIBVIEW)
+        {
+            request->response.variables.push_back({ *Oid::parse(nextVb.get_printable_oid()),
+                                                    toOidValue(nextVb) });
+        }
+        else
+        {
+            request->promise.set_value(Error(ErrorType::TimedOut));
+            return;
+        }
+    }
+    pdu.set_vblist(&nextVb, 1);
+    snmp->get_bulk(pdu, target, 0, 10, callback, request);
 }
 
 SnmpClient::SnmpRequest& SnmpClient::createRequest(const SnmpTarget& target)
@@ -151,6 +219,11 @@ OidValue toOidValue(const Snmp_pp::Vb& vb)
         vb.get_value(i);
         return Oid::Counter64(i);
     }
+    case sNMP_SYNTAX_OID: {
+        Snmp_pp::Oid oid;
+        vb.get_value(oid);
+        return Oid::OidType(*Oid::parse(oid.get_printable()));
+    };
     default: {
         CORE_WARN("Could not convert OID '{}' to value: '{}'", vb.get_printable_oid(), vb.get_printable_value());
     }

@@ -31,6 +31,10 @@ class SnmpClient
         IPv4Address host;
         std::promise<Result<SnmpResponse>> promise;
         SnmpClient* self;
+        SnmpResponse response;
+
+        bool isWalk = false;
+        std::optional<Oid> walkOid;
     };
     std::map<Uuid, SnmpRequest> m_pendingRequests;
 
@@ -51,11 +55,16 @@ class SnmpClient
     std::future<Result<SnmpResponse>> getBulkAsync(const Oid& oid, const SnmpTarget& target, int nonRepeaters, int maxReps) { return getBulkAsync({ &oid, 1 }, target, nonRepeaters, maxReps); };
     std::future<Result<SnmpResponse>> getBulkAsync(nonstd::span<const Oid> oids, const SnmpTarget& target, int nonRepeaters, int maxReps);
 
+    Result<SnmpResponse> walk(const Oid& oid, const SnmpTarget& target);
+    std::future<Result<SnmpResponse>> walkAsync(const Oid& oid, const SnmpTarget& target);
+
   private:
     SnmpClient(std::unique_ptr<Snmp_pp::Snmp> snmp);
 
     SnmpRequest& createRequest(const SnmpTarget& target);
 
     static void callback(int reason, Snmp_pp::Snmp* snmp, Snmp_pp::Pdu& pdu, Snmp_pp::SnmpTarget& target, void* cd);
+    static void handleGet(int reason, Snmp_pp::Snmp* snmp, Snmp_pp::Pdu& pdu, Snmp_pp::SnmpTarget& target, SnmpRequest* request);
+    static void handleWalk(int reason, Snmp_pp::Snmp* snmp, Snmp_pp::Pdu& pdu, Snmp_pp::SnmpTarget& target, SnmpRequest* request);
 };
 } // namespace net

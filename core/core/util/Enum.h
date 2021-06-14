@@ -4,6 +4,7 @@
 #include <fmt/format.h>
 #include <magic_enum.hpp>
 #include <optional>
+#include <string_view>
 
 namespace util
 {
@@ -25,6 +26,13 @@ class Enum : private boost::noncopyable
     }
 
     template <typename T>
+    constexpr static std::optional<T> toEnum(int value)
+    {
+        static_assert(std::is_enum_v<T>, "T is not an enum");
+        return magic_enum::enum_cast<T>(value);
+    }
+
+    template <typename T>
     constexpr static auto count()
     {
         static_assert(std::is_enum_v<T>, "T is not an enum");
@@ -32,7 +40,7 @@ class Enum : private boost::noncopyable
     }
 
     template <typename T>
-    constexpr static auto iterate()
+    constexpr static auto enumerate()
     {
         static_assert(std::is_enum_v<T>, "T is not an enum");
         return magic_enum::enum_values<T>();
@@ -62,3 +70,13 @@ using util::Enum;
             return formatter<string_view>::format(Enum::toString(e), ctx); \
         }                                                                  \
     };
+
+template <typename T>
+struct fmt::formatter<std::pair<T, std::string_view>, std::enable_if_t<std::is_enum_v<T>, char>> : fmt::formatter<std::string>
+{
+    template <typename FormatContext>
+    auto format(const std::pair<T, std::string_view> pair, FormatContext& ctx)
+    {
+        return fmt::formatter<std::string>::format(fmt::format("{} ({})", pair.first, pair.second), ctx);
+    }
+};

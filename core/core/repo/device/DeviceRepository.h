@@ -11,6 +11,7 @@
 #include <algorithm>
 #include <map>
 #include <memory>
+#include <type_traits>
 
 namespace repo
 {
@@ -31,7 +32,7 @@ class DeviceRepository : public Repository<std::shared_ptr<models::Device>, net:
     bool has(const net::MacAddress& mac) const override;
 
     Result<DevicePtr> find(const net::IPv4Address& ip) const;
-    
+
     template <typename Func>
     Result<DevicePtr> findBy(Func&& func) const
     {
@@ -48,10 +49,18 @@ class DeviceRepository : public Repository<std::shared_ptr<models::Device>, net:
     void iterate(Func&& func)
     {
         auto devices = m_devices.synchronize();
+
         for (const auto& [_, device] : *devices)
         {
-            if (func(*device) == IterResult::Break)
-                break;
+            if constexpr (std::is_invocable_r_v<IterResult, Func, models::Device>)
+            {
+                if (func(*device) == IterResult::Break)
+                    break;
+            }
+            else
+            {
+                func(*device);
+            }
         }
     }
 

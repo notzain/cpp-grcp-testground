@@ -7,6 +7,7 @@
 #include "core/util/Result.h"
 #include "core/util/async/FutureResolver.h"
 #include "core/util/logger/Logger.h"
+#include <optional>
 
 namespace service
 {
@@ -19,7 +20,7 @@ class SnmpService
         {
             if (item)
             {
-                CORE_INFO("{}: {}", item->host, fmt::join(item->variables, ", "));
+                CORE_INFO("{}: {}", item->host, fmt::join(item->variables, ",\n\t"));
             }
             else
             {
@@ -40,11 +41,16 @@ class SnmpService
     {
     }
 
-    void requestSystem(const net::IPv4Address& host)
+    void requestSystem(const net::IPv4Address& host, std::optional<std::size_t> port = {})
     {
         const std::array sysOids = { net::Oid::sysName(), net::Oid::sysDescr(), net::Oid::sysUpTime() };
         const auto resolver = std::make_shared<SnmpResolver>();
-        resolver->setFuture(m_client.getAsync(sysOids, net::CommunityTarget::createV1(host)));
+
+        auto target = net::CommunityTarget::createV2(host);
+        if (port)
+            target.setPort(port.value());
+
+        resolver->setFuture(m_client.walkAsync(net::Oid::ifTable(), target));
         util::TaskRunner::defaultRunner()
             .post(resolver);
     }
