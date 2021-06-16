@@ -1,6 +1,7 @@
 #pragma once
 
 #include "Oid.h"
+#include "SnmpDefs.h"
 #include "VarBind.h"
 #include "core/net/IPv4Address.h"
 #include "core/util/Result.h"
@@ -9,6 +10,7 @@
 #include <future>
 #include <memory>
 #include <nonstd/span.hpp>
+#include <snmp_pp/mp_v3.h>
 #include <snmp_pp/snmp_pp.h>
 
 namespace net
@@ -21,9 +23,19 @@ struct SnmpResponse
     std::vector<VarBind> variables;
 };
 
+struct SnmpUserAuthentication
+{
+    std::string username;
+    SnmpAuthProtocol authProtocol;
+    SnmpPrivProtocol privProtocol;
+    std::string authPassword;
+    std::string privPassword;
+};
+
 class SnmpClient
 {
     std::unique_ptr<Snmp_pp::Snmp> m_snmp;
+    std::unique_ptr<Snmp_pp::v3MP> m_v3Model;
 
     struct SnmpRequest
     {
@@ -58,11 +70,15 @@ class SnmpClient
     Result<SnmpResponse> walk(const Oid& oid, const SnmpTarget& target);
     std::future<Result<SnmpResponse>> walkAsync(const Oid& oid, const SnmpTarget& target);
 
+    void addUserAuthentication(const SnmpUserAuthentication& user);
+    void removeUserAuthentication(const std::string& user);
+
   private:
-    SnmpClient(std::unique_ptr<Snmp_pp::Snmp> snmp);
+    SnmpClient(std::unique_ptr<Snmp_pp::Snmp> snmp, std::unique_ptr<Snmp_pp::v3MP> v3);
 
     SnmpRequest& createRequest(const SnmpTarget& target);
 
+    static Result<std::unique_ptr<Snmp_pp::v3MP>> initializeV3();
     static void callback(int reason, Snmp_pp::Snmp* snmp, Snmp_pp::Pdu& pdu, Snmp_pp::SnmpTarget& target, void* cd);
     static void handleGet(int reason, Snmp_pp::Snmp* snmp, Snmp_pp::Pdu& pdu, Snmp_pp::SnmpTarget& target, SnmpRequest* request);
     static void handleWalk(int reason, Snmp_pp::Snmp* snmp, Snmp_pp::Pdu& pdu, Snmp_pp::SnmpTarget& target, SnmpRequest* request);

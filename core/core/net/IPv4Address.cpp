@@ -127,19 +127,14 @@ bool IPv4Address::isLocalhost() const
     return isLoopback();
 }
 
-std::string IPv4Address::asString() const
-{
-    return fmt::format("{}", fmt::join(m_ipAsBytes.rbegin(), m_ipAsBytes.rend(), "."));
-}
-
-std::array<std::uint8_t, 4> IPv4Address::asBytes(ByteOrder::Value byteOrder) const
+std::array<std::uint8_t, 4> IPv4Address::toBytes(ByteOrder::Value byteOrder) const
 {
     return ByteOrder::copy(m_ipAsBytes)
         .from(ByteOrder::NetworkOrder)
         .to(byteOrder);
 }
 
-std::uint32_t IPv4Address::asInt() const
+std::uint32_t IPv4Address::toInt() const
 {
     std::uint32_t addr;
     memcpy(&addr, m_ipAsBytes.data(), m_ipAsBytes.size());
@@ -148,13 +143,13 @@ std::uint32_t IPv4Address::asInt() const
 
 std::string IPv4Address::toString() const
 {
-    return asString();
+    return fmt::format("{}", fmt::join(m_ipAsBytes.rbegin(), m_ipAsBytes.rend(), "."));
 }
 
 IPv4Address IPv4Address::operator++(int)
 {
     auto prev = *this;
-    m_ipAsBytes = IPv4Address::parse(this->asInt() + 1)->m_ipAsBytes;
+    m_ipAsBytes = IPv4Address::parse(this->toInt() + 1)->m_ipAsBytes;
     return prev;
 }
 } // namespace net

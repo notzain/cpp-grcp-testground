@@ -9,6 +9,7 @@
 
 #include <memory>
 #include <snmp_pp/target.h>
+#include <snmp_pp/v3.h>
 
 namespace net
 {
@@ -80,7 +81,7 @@ class CommunityTarget : public SnmpTarget
 
     std::unique_ptr<Snmp_pp::SnmpTarget> toTarget(Badge<SnmpClient>) const override
     {
-        auto ip = Snmp_pp::UdpAddress(ipAddress().asString().data());
+        auto ip = Snmp_pp::UdpAddress(ipAddress().toString().data());
         if (port())
             ip.set_port(port().value());
 
@@ -103,5 +104,29 @@ class CommunityTarget : public SnmpTarget
 
 class UserTarget : public SnmpTarget
 {
+    std::string m_securityName;
+
+  public:
+    UserTarget(IPv4Address target, std::string securityName)
+        : SnmpTarget(SnmpVersion::V3, std::move(target))
+        , m_securityName(std::move(securityName))
+    {
+    }
+
+    std::string_view securityName() const { return m_securityName; }
+    void setSecurityname(std::string securityName) { m_securityName = std::move(securityName); }
+
+    std::unique_ptr<Snmp_pp::SnmpTarget> toTarget(Badge<SnmpClient>) const override
+    {
+        auto ip = Snmp_pp::UdpAddress(ipAddress().toString().data());
+        if (port())
+            ip.set_port(port().value());
+
+        auto snmpTarget = std::make_unique<Snmp_pp::UTarget>(ip, m_securityName.data(), SNMP_SECURITY_MODEL_USM);
+        snmpTarget->set_retry(retries());
+        snmpTarget->set_timeout(timeout().count() / 10);
+
+        return snmpTarget;
+    }
 };
 } // namespace net

@@ -104,19 +104,14 @@ bool MacAddress::isBroadcast(const MacAddress& mac) const
     return *this == broadcast();
 }
 
-std::string MacAddress::asString() const
-{
-    return fmt::format("{:02X}", fmt::join(m_macAsBytes.rbegin(), m_macAsBytes.rend(), ":"));
-}
-
-std::array<std::uint8_t, 6> MacAddress::asBytes(ByteOrder::Value byteOrder) const
+std::array<std::uint8_t, 6> MacAddress::toBytes(ByteOrder::Value byteOrder) const
 {
     return ByteOrder::copy(m_macAsBytes)
         .from(ByteOrder::NetworkOrder)
         .to(byteOrder);
 }
 
-std::uint64_t MacAddress::asInt() const
+std::uint64_t MacAddress::toInt() const
 {
     std::uint64_t addr;
     memcpy(&addr, m_macAsBytes.data(), m_macAsBytes.size());
@@ -125,13 +120,13 @@ std::uint64_t MacAddress::asInt() const
 
 std::string MacAddress::toString() const
 {
-    return asString();
+    return fmt::format("{:02X}", fmt::join(m_macAsBytes.rbegin(), m_macAsBytes.rend(), ":"));
 }
 
 MacAddress MacAddress::operator++(int)
 {
     auto prev = *this;
-    m_macAsBytes = MacAddress::parse(this->asInt() + 1)->m_macAsBytes;
+    m_macAsBytes = MacAddress::parse(this->toInt() + 1)->m_macAsBytes;
     return prev;
 }
 

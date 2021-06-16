@@ -66,6 +66,8 @@ int main(int argc, char** argv)
                   .value_or(net::IPv4Address::zero());
     auto device = models::Device(ip, net::MacAddress::broadcast());
 
+    CORE_INFO("{}", fmt::join(net::Oid::systemTree(), ", "));
+
     for (const auto& [type, name] : Enum::entries<net::Oid::Type>())
     {
         CORE_INFO("{} {}", type, name);
@@ -80,17 +82,17 @@ int main(int argc, char** argv)
                   .value_or(net::IPv4Address::zero()));
     CORE_INFO(net::IPv4Address::parse(3232239904)
                   .value_or(net::IPv4Address::zero())
-                  .asInt());
+                  .toInt());
 
     CORE_INFO("{}",
               fmt::join(net::IPv4Address::parse(3232239904)
                             .value_or(net::IPv4Address::zero())
-                            .asBytes(),
+                            .toBytes(),
                         ", "));
     CORE_INFO("{}",
               fmt::join(net::IPv4Address::parse(3232239904)
                             .value_or(net::IPv4Address::zero())
-                            .asBytes(ByteOrder::NetworkOrder),
+                            .toBytes(ByteOrder::NetworkOrder),
                         ", "));
 
     CORE_INFO(net::MacAddress::parse("f3 08:7d:2f:5c:e0")
@@ -175,7 +177,7 @@ int main(int argc, char** argv)
             dds.clearResults();
         else
         {
-            snmpService.requestSystem(net::IPv4Address::localhost(), 1611);
+            snmpService.requestSystem(net::IPv4Address::localhost(), 1613);
             // deviceRepo->iterate([&snmpService](const models::Device& device) {
             // });
             // dds.discover(*net::IPv4Address::parse("192.168.178.1"), *net::IPv4Address::parse("192.168.178.2"));

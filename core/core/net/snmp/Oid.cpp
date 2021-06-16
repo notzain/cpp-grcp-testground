@@ -11,11 +11,6 @@ Result<Oid> Oid::parse(std::string_view oid)
     return Oid(std::move(snmpOid));
 }
 
-std::string_view Oid::asDottedString() const
-{
-    return m_oid.get_printable();
-}
-
 std::string Oid::toString() const
 {
     return m_oid.get_printable();

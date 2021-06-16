@@ -54,8 +54,8 @@ util::Result<IcmpResponse, IcmpError> IcmpScanner::ping(const IPv4Address& host,
     auto fut = pingAsync(host, mac);
     if (fut.wait_for(std::chrono::seconds(5)) == std::future_status::timeout)
     {
-        const auto& request = m_pendingRequests[host.asString()];
-        m_pendingRequests.erase(host.asString());
+        const auto& request = m_pendingRequests[host.toString()];
+        m_pendingRequests.erase(host.toString());
         return Error(IcmpError{
             request.dstIp,
             ErrorType::TimedOut });
@@ -68,11 +68,11 @@ std::future<util::Result<IcmpResponse, IcmpError>> IcmpScanner::pingAsync(const 
     PacketBuilder packetBuilder;
     packetBuilder
         .addLayer(EthLayerBuilder::create()
-                      .withSrcMac(m_networkInterface.macAddress().asString())
-                      .withDstMac(mac.asString()))
+                      .withSrcMac(m_networkInterface.macAddress().toString())
+                      .withDstMac(mac.toString()))
         .addLayer(IPv4LayerBuilder::create()
-                      .withSrcIp(m_networkInterface.ipAddress().asString())
-                      .withDstIp(host.asString())
+                      .withSrcIp(m_networkInterface.ipAddress().toString())
+                      .withDstIp(host.toString())
                       .withId(htons(2000))
                       .withTimeToLive(64))
         .addLayer(IcmpLayerBuilder::create()
@@ -91,8 +91,8 @@ std::future<util::Result<IcmpResponse, IcmpError>> IcmpScanner::pingAsync(const 
         CORE_WARN("{}", bytesSent.error());
     }
 
-    m_pendingRequests[host.asString()] = Request{ host, {}, sentTime };
-    return m_pendingRequests[host.asString()].promise.get_future();
+    m_pendingRequests[host.toString()] = Request{ host, {}, sentTime };
+    return m_pendingRequests[host.toString()].promise.get_future();
 }
 
 void IcmpScanner::onPacketReceived(const v2::ReceivedPacket& packet)
@@ -115,16 +115,16 @@ void IcmpScanner::onPacketReceived(const v2::ReceivedPacket& packet)
 
     response.ttl = ipLayer->getIPv4Header()->timeToLive;
 
-    if (m_pendingRequests.count(response.srcIp.asString()))
+    if (m_pendingRequests.count(response.srcIp.toString()))
     {
-        auto& request = m_pendingRequests[response.srcIp.asString()];
+        auto& request = m_pendingRequests[response.srcIp.toString()];
 
         response.responseTime = std::chrono::duration_cast<std::chrono::milliseconds>(
             packet.arrival - request.time);
 
         request.promise.set_value(std::move(response));
 
-        m_pendingRequests.erase(response.srcIp.asString());
+        m_pendingRequests.erase(response.srcIp.toString());
     }
 }
 

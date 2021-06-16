@@ -19,22 +19,22 @@ TEST_SUITE("IPv4Address")
             auto ipNumber = 3232238853;
 
             REQUIRE(net::IPv4Address::parse(ipString).has_value());
-            REQUIRE(net::IPv4Address::parse(ipString)->asString() == "192.168.13.5");
+            REQUIRE(net::IPv4Address::parse(ipString)->toString() == "192.168.13.5");
 
             REQUIRE(net::IPv4Address::parse(ipArrayHostOrder).has_value());
-            REQUIRE(net::IPv4Address::parse(ipArrayHostOrder)->asString() == "192.168.13.5");
+            REQUIRE(net::IPv4Address::parse(ipArrayHostOrder)->toString() == "192.168.13.5");
 
             REQUIRE(net::IPv4Address::parse(ipArrayNetworkOrder, ByteOrder::NetworkOrder).has_value());
-            REQUIRE(net::IPv4Address::parse(ipArrayNetworkOrder, ByteOrder::NetworkOrder)->asString() == "192.168.13.5");
+            REQUIRE(net::IPv4Address::parse(ipArrayNetworkOrder, ByteOrder::NetworkOrder)->toString() == "192.168.13.5");
 
             REQUIRE(net::IPv4Address::parse(ipListHostOrder).has_value());
-            REQUIRE(net::IPv4Address::parse(ipListHostOrder)->asString() == "192.168.13.5");
+            REQUIRE(net::IPv4Address::parse(ipListHostOrder)->toString() == "192.168.13.5");
 
             REQUIRE(net::IPv4Address::parse(ipListNetworkOrder, ByteOrder::NetworkOrder).has_value());
-            REQUIRE(net::IPv4Address::parse(ipListNetworkOrder, ByteOrder::NetworkOrder)->asString() == "192.168.13.5");
+            REQUIRE(net::IPv4Address::parse(ipListNetworkOrder, ByteOrder::NetworkOrder)->toString() == "192.168.13.5");
 
             REQUIRE(net::IPv4Address::parse(ipNumber).has_value());
-            REQUIRE(net::IPv4Address::parse(ipNumber)->asString() == "192.168.13.5");
+            REQUIRE(net::IPv4Address::parse(ipNumber)->toString() == "192.168.13.5");
         }
         SUBCASE("Invalid")
         {

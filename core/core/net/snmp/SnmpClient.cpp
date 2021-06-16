@@ -27,12 +27,20 @@ Result<SnmpClient::Ptr> SnmpClient::create(std::size_t port)
         return Error(ErrorType::Unknown);
     }
 
-    return std::shared_ptr<SnmpClient>(new SnmpClient(std::move(snmp)));
+    auto v3Model = initializeV3();
+    if (!v3Model)
+    {
+        return Error(ErrorType::Unknown);
+    }
+
+    return std::shared_ptr<SnmpClient>(new SnmpClient(std::move(snmp), std::move(*v3Model)));
 }
 
-SnmpClient::SnmpClient(std::unique_ptr<Snmp_pp::Snmp> snmp)
+SnmpClient::SnmpClient(std::unique_ptr<Snmp_pp::Snmp> snmp, std::unique_ptr<Snmp_pp::v3MP> v3)
     : m_snmp(std::move(snmp))
+    , m_v3Model(std::move(v3))
 {
+    m_snmp->set_mpv3(m_v3Model.get());
     m_snmp->start_poll_thread(10);
 }
 
@@ -85,6 +93,50 @@ std::future<Result<SnmpResponse>> SnmpClient::walkAsync(const Oid& oid, const Sn
     return request.promise.get_future();
 }
 
+void SnmpClient::addUserAuthentication(const SnmpUserAuthentication& user)
+{
+    m_v3Model->get_usm()->add_usm_user(user.username.data(),
+                                       static_cast<int>(user.authProtocol),
+                                       static_cast<int>(user.privProtocol),
+                                       user.authPassword.data(),
+                                       user.privPassword.data());
+}
+
+void SnmpClient::removeUserAuthentication(const std::string& user)
+{
+    m_v3Model->get_usm()->delete_usm_user(user.data());
+}
+
+Result<std::unique_ptr<Snmp_pp::v3MP>> SnmpClient::initializeV3()
+{
+    const char* engineId = "snmp_engine_proc";
+    const char* filename = "snmpv3_boot_counter";
+    unsigned int snmpEngineBoots = 0;
+    int status;
+
+    status = Snmp_pp::getBootCounter(filename, engineId, snmpEngineBoots);
+    if ((status != SNMPv3_OK) && (status < SNMPv3_FILEOPEN_ERROR))
+    {
+        CORE_ERROR("Error loading snmpEngineBoots counter: {}", status);
+        return Error(ErrorType::Unavailable);
+    }
+    snmpEngineBoots++;
+    status = Snmp_pp::saveBootCounter(filename, engineId, snmpEngineBoots);
+    if (status != SNMPv3_OK)
+    {
+        CORE_ERROR("Error saving snmpEngineBoots counter: {}", status);
+        return Error(ErrorType::Unavailable);
+    }
+
+    auto v3_MP = std::make_unique<Snmp_pp::v3MP>(engineId, snmpEngineBoots, status);
+    if (status != SNMPv3_MP_OK)
+    {
+        CORE_ERROR("Error initializing v3MP: {}", status);
+        return Error(ErrorType::Unavailable);
+    }
+    return v3_MP;
+}
+
 void SnmpClient::callback(int reason, Snmp_pp::Snmp* snmp, Snmp_pp::Pdu& pdu, Snmp_pp::SnmpTarget& target, void* requestPtr)
 {
     auto* request = static_cast<SnmpRequest*>(requestPtr);
@@ -134,7 +186,7 @@ void SnmpClient::handleWalk(int reason, Snmp_pp::Snmp* snmp, Snmp_pp::Pdu& pdu, 
         return;
     }
 
-    Snmp_pp::Oid requestOid(request->walkOid->asDottedString().data());
+    Snmp_pp::Oid requestOid(request->walkOid->toString().data());
 
     Snmp_pp::Vb nextVb;
     for (int i = 0; i < pdu.get_vb_count(); i++)
@@ -178,7 +230,7 @@ Snmp_pp::Pdu createPdu(nonstd::span<const Oid> oids)
     for (const auto& oid : oids)
     {
         Snmp_pp::Vb vb;
-        vb.set_oid(oid.asDottedString().data());
+        vb.set_oid(oid.toString().data());
         pdu += vb;
     }
     return pdu;

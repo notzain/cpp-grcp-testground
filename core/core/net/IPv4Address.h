@@ -47,20 +47,18 @@ class IPv4Address
     bool isLoopback() const;
     bool isLocalhost() const;
 
-    std::string asString() const;
-    std::array<std::uint8_t, 4> asBytes(ByteOrder::Value byteOrder = ByteOrder::HostOrder) const;
-    std::uint32_t asInt() const;
-
+    std::array<std::uint8_t, 4> toBytes(ByteOrder::Value byteOrder = ByteOrder::HostOrder) const;
+    std::uint32_t toInt() const;
     std::string toString() const override;
 
     bool operator==(const IPv4Address& other) const { return m_ipAsBytes == other.m_ipAsBytes; }
     bool operator!=(const IPv4Address& other) const { return !(*this == other); }
-    bool operator<(const IPv4Address& other) const { return asInt() < other.asInt(); }
+    bool operator<(const IPv4Address& other) const { return toInt() < other.toInt(); }
     bool operator>(const IPv4Address& other) const { return other < *this; }
     bool operator<=(const IPv4Address& other) const { return !(other < *this); }
     bool operator>=(const IPv4Address& other) const { return !(*this < other); }
 
-    bool operator==(std::string_view other) const { return asString() == other; }
+    bool operator==(std::string_view other) const { return toString() == other; }
     bool operator!=(std::string_view other) const { return !(*this == other); }
 
     IPv4Address operator++(int);

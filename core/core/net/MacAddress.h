@@ -38,20 +38,18 @@ class MacAddress : public traits::Printable<MacAddress>
     bool isBetween(const MacAddress& begin, const MacAddress& end) const;
     bool isBroadcast(const MacAddress& mac) const;
 
-    std::string asString() const;
-    std::array<std::uint8_t, 6> asBytes(ByteOrder::Value byteOrder = ByteOrder::HostOrder) const;
-    std::uint64_t asInt() const;
-
+    std::array<std::uint8_t, 6> toBytes(ByteOrder::Value byteOrder = ByteOrder::HostOrder) const;
+    std::uint64_t toInt() const;
     std::string toString() const override;
 
     bool operator==(const MacAddress& other) const { return m_macAsBytes == other.m_macAsBytes; }
     bool operator!=(const MacAddress& other) const { return !(*this == other); }
-    bool operator<(const MacAddress& other) const { return asInt() < other.asInt(); }
+    bool operator<(const MacAddress& other) const { return toInt() < other.toInt(); }
     bool operator>(const MacAddress& other) const { return other < *this; }
     bool operator<=(const MacAddress& other) const { return !(other < *this); }
     bool operator>=(const MacAddress& other) const { return !(*this < other); }
 
-    bool operator==(std::string_view other) const { return asString() == other; }
+    bool operator==(std::string_view other) const { return toString() == other; }
     bool operator!=(std::string_view other) const { return !(*this == other); }
 
     MacAddress operator++(int);
